@@ -3,7 +3,7 @@ from ..ext import gopyjson as gpj
 
 class Event(metaclass=gpj.Struct):
     operation = gpj.field('op')
-    raw_data = gpj.field('d')
+    raw_data = gpj.field('d', raw_json=True)
     type = gpj.field('t', optional=True)
     seq = gpj.field('s', optional=True)
 

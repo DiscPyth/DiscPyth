@@ -38,7 +38,7 @@ class Session(WS_Session):
             await self._open()
 
         # Create inner_open() as a task
-        # my testing shows run_until_complete doesnt work here
+        # my testing shows run_until_complete doesn't work here
         tsk = self.session._loop.create_task(inner_open())
         try:
 
@@ -55,7 +55,7 @@ class Session(WS_Session):
             # ended their entire session or just a shard
             # if we close our seesion in wsapi.WS_Session.close() then
             # even closing a shard will end the loop
-            self.ses._loop.close()
+            self.session._loop.close()
 
     def close(self):
 
@@ -69,9 +69,12 @@ class Session(WS_Session):
         self.session._loop.run_until_complete(self._close())
 
         # Since we dont know if a shard has closed or the entire thing
-        # we need to check if shard count is 1 since 1 shard means just a
-        # single session and we can safetly close our ClientSession without
-        # worrying about killing all the other sessions
+        # we need to check if shard count is 1, since 1 shard means just a
+        # single ws connection and we can safetly close our ClientSession without
+        # worrying about killing all the other ws connections
+        # if a user manually launches shards 
+        # then its not a problem unless they modify the Session returned by
+        # new() to share the same ClientSession and keep the shard count at 1
         if self.session.ShardCount == 1:
             self.session._loop.run_until_complete(self.session.Client.close())
 
