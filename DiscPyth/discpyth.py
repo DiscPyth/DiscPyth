@@ -7,14 +7,13 @@ from . import _Session, _Session_Manager
 class SessionManager:
     pass
 
-
-class Session(WS_Session):
-    def __init__(self, session: _Session) -> None:
+# WARNING: The following code includes some shitty inheritance hacks
+class Session(WS_Session, _Session):
+    def __init__(self) -> None:
 
         # explicitly defining class because
         # (uhh i dont remember but its important!)
-        WS_Session.__init__(self, session)
-        self.session: _Session = session
+        WS_Session.__init__(self)
 
     def open(self):
 
@@ -31,22 +30,24 @@ class Session(WS_Session):
             # this is just a single session, in sharding
             # we can modify the results from new to
             # use the same ClientSession hence we need to check if its none or not
-            if self.session.Client is None:
-                self.session.Client = aiohttp.ClientSession()
+            if self.Client is None:
+                self.Client = aiohttp.ClientSession()
 
             # Open the actual ws connection (./wsapi.py)
             await self._open()
 
         # Create inner_open() as a task
         # my testing shows run_until_complete doesn't work here
-        tsk = self.session._loop.create_task(inner_open())
+        tsk = self._loop.create_task(inner_open())
         try:
 
             # Now run the loop
-            self.session._loop.run_forever()
+            self._loop.run_forever()
 
         # For now this is KeyboardInterrupt but later we prob will change it
         except KeyboardInterrupt:
+
+            tsk.cancel()
 
             # Trigger close on Exception
             self.close()
@@ -55,7 +56,7 @@ class Session(WS_Session):
             # ended their entire session or just a shard
             # if we close our seesion in wsapi.WS_Session.close() then
             # even closing a shard will end the loop
-            self.session._loop.close()
+            self._loop.close()
 
     def close(self):
 
@@ -66,7 +67,7 @@ class Session(WS_Session):
         # users might want to close their sesion on a command from discord and
         # as stated in open() this is much more newbie friendly
 
-        self.session._loop.run_until_complete(self._close())
+        self._loop.run_until_complete(self._close())
 
         # Since we dont know if a shard has closed or the entire thing
         # we need to check if shard count is 1, since 1 shard means just a
@@ -75,8 +76,8 @@ class Session(WS_Session):
         # if a user manually launches shards 
         # then its not a problem unless they modify the Session returned by
         # new() to share the same ClientSession and keep the shard count at 1
-        if self.session.ShardCount == 1:
-            self.session._loop.run_until_complete(self.session.Client.close())
+        if self.ShardCount == 1:
+            self._loop.run_until_complete(self.Client.close())
 
 
 def new(token, /, *, shard_id=0, shard_count=1, **options) -> Session:
@@ -94,16 +95,16 @@ def new(token, /, *, shard_id=0, shard_count=1, **options) -> Session:
     Raises:
         `ValueError` - When `shard_id` is more than or equal to`shard_count`
     """
-    s = _Session()
-
+    ses = Session()
+    _Session.__init__(ses)
     # Set the event loop or get it from options
-    s._loop = options.get("__loop", asyncio.get_event_loop())
+    ses._loop = options.get("__loop", asyncio.get_event_loop())
 
     # Get the logger or set an empty lamba function
-    s.log = options.get("logger", (lambda lvl, msg: None))
+    ses.log = options.get("logger", (lambda lvl, msg: None))
 
     # Set the token
-    s.Token = token
+    ses.Token = token
 
     if shard_id >= shard_count:
         raise ValueError(
@@ -111,16 +112,15 @@ def new(token, /, *, shard_id=0, shard_count=1, **options) -> Session:
         )
 
     # Set current session shard id
-    s.ShardID = shard_id
+    ses.ShardID = shard_id
 
     # Set the total shard count, going to be same
     # across all session instances.. probs unless
     # the user does some stuff after creating the session
-    s.ShardCount = shard_count
+    ses.ShardCount = shard_count
 
     # Other stuff is predefined or needs to be set in open() method
-
-    return Session(s)
+    return ses
 
 
 def new_sharded(token, /, *, shard_id=0, shard_count=1, **options) -> SessionManager:

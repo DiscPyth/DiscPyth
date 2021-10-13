@@ -2,18 +2,30 @@ from ..ext import gopyjson as gpj
 
 
 class Event(metaclass=gpj.Struct):
-    operation = gpj.field('op')
-    raw_data = gpj.field('d', raw_json=True)
-    type = gpj.field('t', optional=True)
-    seq = gpj.field('s', optional=True)
+    operation = gpj.field("op")
+    raw_data = gpj.field("d", raw_json=True)
+    type = gpj.field("t", optional=True)
+    seq = gpj.field("s", optional=True)
 
 
 class Hello(metaclass=gpj.Struct):
-    heartbeat = gpj.field('heartbeat_interval')
+    heartbeat = gpj.field("heartbeat_interval")
+
+
+class IdentifyProperties(metaclass=gpj.Struct):
+    os = gpj.field("$os")
+    browser = gpj.field("$browser")
+    device = gpj.field("$device")
 
 
 class Identify(metaclass=gpj.Struct):
-    pass
+    token = gpj.field("token")
+    properties = gpj.field("properties")
+    compress = gpj.field("compress")
+    large = gpj.field("large_threshold")
+    shard = gpj.field("shard")
+    presence = gpj.field("presence")
+    intents = gpj.field("intents")
 
 
 class Presence_Update(metaclass=gpj.Struct):
@@ -29,17 +41,18 @@ class Request_Guild_Members(metaclass=gpj.Struct):
     user_ids o
     nonce o
     """
+
     pass
 
 
 class Resume(metaclass=gpj.Struct):
-    token = gpj.field('token')
-    ses_id = gpj.field('session_id')
-    seq = gpj.field('seq')
+    token = gpj.field("token")
+    ses_id = gpj.field("session_id")
+    seq = gpj.field("seq")
 
 
 class Voice_State_Update(metaclass=gpj.Struct):
-    guild = gpj.field('guild_id')
-    channel = gpj.field('channel_id')
-    mute = gpj.field('self_mute')
-    deaf = gpj.field('self_deaf')
+    guild = gpj.field("guild_id")
+    channel = gpj.field("channel_id")
+    mute = gpj.field("self_mute")
+    deaf = gpj.field("self_deaf")

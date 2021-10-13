@@ -89,7 +89,7 @@ class _Session:
     wsConn: aiohttp.ClientWebSocketResponse = None
 
     # sequence tracks the current gateway api websocket sequence number
-    sequence: str = ""
+    sequence: int = None
 
     # stores sessions current Discord Gateway
     gateway: str = ""
