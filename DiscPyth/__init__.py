@@ -100,6 +100,11 @@ class _Session:
     # Logger
     log = lambda lvl, msg: None
 
+    # Tasks
+    listening: asyncio.Future = None
+    heartbeat: asyncio.Future = None
+    opened: asyncio.Future = None
+
 
 from .discpyth import new, new_sharded
 

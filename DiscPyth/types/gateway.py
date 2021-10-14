@@ -10,6 +10,13 @@ class Event(metaclass=gpj.Struct):
 
 class Hello(metaclass=gpj.Struct):
     heartbeat = gpj.field("heartbeat_interval")
+    # Jake said that I can ignore it tho
+    # I will still assume its there, gopyjson already
+    # assigns None at runtime so I dont have to worry
+    # about anything
+    # also since it may not exist 
+    # we will just get the raw json   
+    trace = gpj.field("_trace", raw_json=True)
 
 
 class IdentifyProperties(metaclass=gpj.Struct):
@@ -24,7 +31,7 @@ class Identify(metaclass=gpj.Struct):
     compress = gpj.field("compress")
     large = gpj.field("large_threshold")
     shard = gpj.field("shard")
-    presence = gpj.field("presence")
+    presence = gpj.field("presence", optional=True)
     intents = gpj.field("intents")
 
 
