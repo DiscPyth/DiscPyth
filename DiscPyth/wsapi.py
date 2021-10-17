@@ -1,180 +1,125 @@
-from . import _Session
-from .types import gateway
-from .ext import gopyjson as gpj
 import zlib
-from aiohttp import WSCloseCode, WSMsgType
-import asyncio
 import time
+import asyncio
+import aiohttp
 import sys
+from . import _Session
+from .ext import gopyjson as gpj
+from .types import EVENT, IDENTIFY, IDENTIFY_PROPERTIES
 
+ZLIB_SUFFIX = b'\x00\x00\xff\xff'
 
-class ErrWSAlreadyOpen(Exception):
-    def __init__(self, sid):
-        self.sid = sid
-        super().__init__(f"WebSocket already open for shard {sid}!")
+# Monkey Patched exception creator 😋
+def new_error(name:str, output=None) -> Exception:
+    # Class Cell so super() doesnt throw an error,
+    # could have just done Exception.__init__
+    # but whatever 🙄
+    # https://stackoverflow.com/questions/43778914/python3-using-super-in-eq-methods-raises-runtimeerror-super-class/43779009#43779009
+    __class__ = Exception
+    def replacedinit(self):
+        super().__init__(output)
+    # Quick way to create a class
+    err = type(str(name), (Exception,), dict())
+    if output is not None:
+        # Replace __init__ if output is defined, 
+        # better than new_error("Error")("Output")
+        # instead new_error("Error", "Output")
+        setattr(err, "__init__", replacedinit)
+    return err
 
-
-class WSClosed(Exception):
-    pass
-
-
-class WSError(Exception):
-    pass
-
+ErrWSAlreadyOpen = new_error("ErrWSAlreadyOpen", "WebSocket already open!")
+ErrWSNotFound = new_error("ErrWSNotFound", "WebSocket not yet opened!")
+# For handling the while loop
+ErrWSClosed = new_error("ErrWSClosed", "WebSocket is closed!")
 
 class WS_Session(_Session):
     def __init__(self):
-        self.ZLIB_SUFFIX = b"\x00\x00\xff\xff"
-        self.buffer = bytearray()
-        self.inflator = zlib.decompressobj()
-
+        self._buffer = bytearray()
+        self._inflator = zlib.decompressobj()
     async def _open(self):
-        if self.wsConn is not None:
-            raise ErrWSAlreadyOpen(self.ShardID) from None
+        if self.Client is None:
+            self.Client = aiohttp.ClientSession()
 
-        if self.gateway == "":
-            # TODO: replace with a REST request to /gateway
-            self.gateway = (
-                "wss://gateway.discord.gg/?v=9&encoding=json&compress=zlib-stream"
-            )
+        if self._wsConn is not None:
+            raise ErrWSAlreadyOpen
+        if self._gateway == "":
+            self._gateway = "wss://gateway.discord.gg/?v=9&encoding=json"
+        self._wsConn = await self.Client.ws_connect(self._gateway)
+        await self._on_event()
 
-        self.wsConn = await self.Client.ws_connect(self.gateway)
-
-        e = await self._on_event()
-        if e.operation != 10:
-            raise WSError(f"Expected Operation Code 10 but received {e.operation}.")
-
-        h = gpj.loads(e.raw_data, gateway.Hello())
-        self.LastHeartbeatAck = time.time()
-
-        if self.sessionID == "" and self.sequence is None:
-            await self.wsConn.send_str(self._create_payload(2, self._identify))
-
-        e = await self._on_event()
-
-        self.heartbeat = self._loop.create_task(self._heartbeat((h.heartbeat)/1000))
-        self.listening = self._loop.create_task(self._listening())
+        self._loop.create_task(self._t_listening())
 
     async def _on_event(self):
-        msg = await self.wsConn.receive()
-        if msg.type in (WSMsgType.BINARY, WSMsgType.TEXT):
-            msg = self._decompress_message(msg.data)
-            self.sequence = msg.seq
-            print(
-                f"""Received Payload from Discord
-\tOperation Code : {msg.operation},
-\tSequence : {msg.seq},
-\tEvent : {msg.type},
-\tRaw Data : {msg.raw_data},"""
-            )
-            if msg.operation == 1:
-                print("Gateway requested for a heartbeat sending one...")
-                await self.wsConn.send_str(self._create_payload(1, self.sequence))
+        ws_resp = await self._wsConn.receive()
+        if ws_resp.type in (aiohttp.WSMsgType.BINARY, aiohttp.WSMsgType.TEXT):
+            msg = self._decode_message(ws_resp.data)
+            self._log(10, f"Received Payload from Discord\nOperation Code : {msg.Operation}, Sequence : {msg.Sequence}, Event Type : {msg.Type}, Raw Data : {msg.Raw_Data}")
+            if msg.Operation == 1:
+                await self._send_payload(1, self._sequence)
                 return msg
-            if msg.operation == 7:
-                print("Reconnecting...")
-                await self._close(code=WSCloseCode.SERVICE_RESTART)
+            if msg.Operation == 7:
+                await self._close_w_code(aiohttp.WSCloseCode.SERVICE_RESTART)
                 await self._reconnect()
-                return msg
-            if msg.operation == 9:
-                print("Invalid Session, checking if Resumeable else Identifying...")
-                # "The inner d key is a boolean that indicates
-                # whether the session may be resumable. See Connecting
-                # and Resuming for more information."
-                # https://discord.com/developers/docs/topics/gateway#invalid-session
-                if msg.raw_data == "false":
-                    await self.wsConn.send_str(self._create_payload(2, self._identify))
+            if msg.Operation == 9:
+                if msg.Raw_Data == "true":
+                    pass
                 else:
-                    await self.wsConn.send_str(self._create_payload(6, self._resume))
+                    pass
+            if msg.Operation == 10:
                 return msg
-            if msg.operation == 10:
-                # Handled by _open()
-                return msg
-            if msg.operation == 11:
-                print("Heartbeat Ack received!")
+            if msg.Operation == 11:
                 self.LastHeartbeatAck = time.time()
                 return msg
-            if msg.operation != 0:
-                print(f"Received unknown Operation Code {msg.operation}")
+            if msg.Operation != 0:
+                print(f"Recieved unknown Operation Code {msg.Operation}")
                 return msg
-        if msg.type in (WSMsgType.CLOSED, WSMsgType.CLOSING, WSMsgType.CLOSE):
-            raise WSClosed()
+        if ws_resp.type in (aiohttp.WSMsgType.CLOSING, aiohttp.WSMsgType.CLOSED, aiohttp.WSMsgType.CLOSE):
+            raise ErrWSClosed
+        if ws_resp.type in (aiohttp.WSMsgType.ERROR,):
+            # "Actually not frame but a flag 
+            # indicating that websocket was received an error."
+            # https://docs.aiohttp.org/en/stable/websocket_utilities.html#aiohttp.WSMsgType.ERROR
+            raise ws_resp.data
 
-        return
-
-    def _decompress_message(self, msg) -> gateway.Event:
+    def _decode_message(self, msg):
         if type(msg) is bytes:
-            self.buffer.extend(msg)
-            if len(msg) < 4 or msg[-4:] != self.ZLIB_SUFFIX:
+            self._buffer.extend(msg)
+            if len(msg) < 4 or msg[-4:] != ZLIB_SUFFIX:
                 return
-            msg = self.inflator.decompress(self.buffer)
-            msg = msg.decode("utf-8")
-            self.buffer = bytearray()
-        msg = gpj.loads(msg, gateway.Event())
-        return msg
+            msg = self._inflator.decompress(self._buffer)
+            msg = msg.decode('utf-8')
+            self._buffer = bytearray()
 
-    def update_status_complex():
-        status = {}
+        return gpj.loads(msg, EVENT())
 
-    @property
-    def _identify(self):
-        identify = gateway.Identify()
-        identify.token = self.Token
-        identify.compress = True
-        identify.large = 250
-        identify.shard = [self.ShardID, self.ShardCount]
-        identify.intents = 513
-        properties = gateway.IdentifyProperties()
-        properties.os = sys.platform
-        properties.browser = "DiscPyth"
-        properties.device = "DiscPyth"
-        identify.properties = properties
-        return identify
+    async def _send_payload(self, op, data):
+        e = EVENT
+        e.Operation = op
+        e.Raw_Data = data
+        raw_payload = gpj.dumps(e)
+        await self._wsConn.send_str(raw_payload)
 
-    @property
-    def _resume(self):
-        resume = gateway.Resume()
-        resume.seq = self.sequence
-        resume.ses_id = self.sessionID
-        resume.token = self.Token
-        return resume
-
-    async def _heartbeat(self, delay):
+    async def _t_listening(self):
         while True:
-            await self.wsConn.send_str(self._create_payload(1, self.sequence))
+            await self._on_event()
+
+    async def _t_heartbeat(self, delay):
+        while True:
+            await self._send_payload(1, self._sequence)
             await asyncio.sleep(delay)
 
-    async def _listening(self):
-        while True:
-            try:
-                await self._on_event()
-            except WSClosed:
-                raise
+    async def _close_w_code(self, code=None):
+        if self._opened is not None:
+            self._opened.cancel()
 
-    def _create_payload(self, op, data):
-        e = gateway.Event()
-        e.operation = op
-        e.raw_data = data
-        return gpj.dumps(e)
-
-    async def _close(self, code=None):
-        if self.opened is not None:
-            self.opened.cancel()
-            self.opened = None
-        if self.listening is not None:
-            self.listening.cancel()
-            self.listening = None
-        if self.heartbeat is not None:
-            self.heartbeat.cancel()
-        if self.wsConn is not None:
+        if self._wsConn is not None:
             if code is not None:
-                await self.wsConn.close(code=code)
+                await self._wsConn.close(code=code)
             else:
-                await self.wsConn.close()
-            self.wsConn = None
+                await self._wsConn.close()
 
     async def _reconnect(self):
         try:
-            await self._open()
-        except ErrWSAlreadyOpen as e:
-            print(f"WebSocket already open for shard id {e.sid} no need to reopen!")
+            self._opened = self._loop.create_task(self._open())
+        except ErrWSAlreadyOpen:
+            pass

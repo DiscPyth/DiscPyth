@@ -12,12 +12,17 @@
 ![GitHub Repo stars](https://img.shields.io/github/stars/DiscPyth/DiscPyth?color=333&label=%20&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxNiAxNiI%2BCiAgPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNOCAuMjVhLjc1Ljc1IDAgMDEuNjczLjQxOGwxLjg4MiAzLjgxNSA0LjIxLjYxMmEuNzUuNzUgMCAwMS40MTYgMS4yNzlsLTMuMDQ2IDIuOTcuNzE5IDQuMTkyYS43NS43NSAwIDAxLTEuMDg4Ljc5MUw4IDEyLjM0N2wtMy43NjYgMS45OGEuNzUuNzUgMCAwMS0xLjA4OC0uNzlsLjcyLTQuMTk0TC44MTggNi4zNzRhLjc1Ljc1IDAgMDEuNDE2LTEuMjhsNC4yMS0uNjExTDcuMzI3LjY2OEEuNzUuNzUgMCAwMTggLjI1em0wIDIuNDQ1TDYuNjE1IDUuNWEuNzUuNzUgMCAwMS0uNTY0LjQxbC0zLjA5Ny40NSAyLjI0IDIuMTg0YS43NS43NSAwIDAxLjIxNi42NjRsLS41MjggMy4wODQgMi43NjktMS40NTZhLjc1Ljc1IDAgMDEuNjk4IDBsMi43NyAxLjQ1Ni0uNTMtMy4wODRhLjc1Ljc1IDAgMDEuMjE2LS42NjRsMi4yNC0yLjE4My0zLjA5Ni0uNDVhLjc1Ljc1IDAgMDEtLjU2NC0uNDFMOCAyLjY5NHYuMDAxeiIgZmlsbD0iI2Y1ZjVmNSIvPiAKIDwvc3ZnPg%3D%3D)
 
 **DiscPyth** is an unofficial wrapper in python for the official Discord API.
+Its basically [discordgo](https://github.com/bwmarrin/discordgo/) but in python 😋.
+[**discordgo**](https://github.com/bwmarrin/discordgo/) is an awesome wrapper for golang by [@bwmarrin](https://github.com/bwmarrin) and is pretty simple to use, DiscPyth follows the same structure hence also making it easy and simple.
+
+> Slow Development, development maybe slow during this month since i have my exams...
 
 > This library is currently in development, and has limited internal functionality... I heavily do not recommend you to use it until further notice.
 
 ### Demo
 
 `WIP`
+
 ### Support
 
 The support server : [Code Crash](https://discord.gg/8RATdNBs6n)

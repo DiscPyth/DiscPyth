@@ -39,12 +39,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from __future__ import annotations
+
 __author__ = "arHSM"
 __version__ = "0.1.0"
 
-import asyncio
-import aiohttp
+from typing import TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from .types import IDENTIFY
+    import asyncio
+    import aiohttp
+    from logging import Logger
 
 class _Session_Manager:
     pass
@@ -53,18 +59,10 @@ class _Session_Manager:
 class _Session:
     _loop: asyncio.AbstractEventLoop = None
 
-    Token: str = ""
-
-    # Sharding
-    ShardID: int = 0
-    ShardCount: int = 1
+    Identify: IDENTIFY = None
 
     # Max number of REST API retries
     MaxRestRetries: int = 3
-
-    # Managed state object, updated internally with events when
-    # StateEnabled is true.
-    # State
 
     # The http client used for REST requests and WSs
     Client: aiohttp.ClientSession = None
@@ -78,34 +76,30 @@ class _Session:
     # Stores the last Heartbeat sent (in UTC)
     LastHeartbeatSent: float = 0.0
 
-    # used to deal with rate limits
-    # Ratelimiter
-
     # Event handlers
-    handlers: None = None
-    onceHandlers: None = None
+    _handlers: None = None
+    _onceHandlers: None = None
 
     # The websocket connection.
-    wsConn: aiohttp.ClientWebSocketResponse = None
+    _wsConn: aiohttp.ClientWebSocketResponse = None
 
     # sequence tracks the current gateway api websocket sequence number
-    sequence: int = None
+    _sequence: int = None
 
     # stores sessions current Discord Gateway
-    gateway: str = ""
+    _gateway: str = ""
 
     # stores session ID of current Gateway connection
-    sessionID: str = ""
+    _sessionID: str = ""
 
     # Logger
-    log = lambda lvl, msg: None
+    _log: Logger.log = lambda lvl, msg: None
 
     # Tasks
-    listening: asyncio.Future = None
-    heartbeat: asyncio.Future = None
-    opened: asyncio.Future = None
+    _listening: asyncio.Future = None
+    _heartbeat: asyncio.Future = None
+    _opened: asyncio.Future = None
 
+from .discpyth import Session
 
-from .discpyth import new, new_sharded
-
-__all__ = ("new", "new_sharded")
+__all__ = ("Session",)
