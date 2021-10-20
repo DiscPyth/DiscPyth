@@ -7,7 +7,8 @@ import aiohttp
 
 from . import _Session
 from .ext import gopyjson as gpj
-from .structs import new_type, EVENT, HELLO, IDENTIFY, IDENTIFY_PROPERTIES, RESUME
+from .structs import (EVENT, HELLO, IDENTIFY, IDENTIFY_PROPERTIES, RESUME,
+                      new_type)
 
 ZLIB_SUFFIX = b"\x00\x00\xff\xff"
 

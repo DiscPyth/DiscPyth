@@ -3,8 +3,8 @@ from __future__ import annotations
 import asyncio
 import logging
 import sys
-from typing import Literal
 import zlib
+from typing import Literal
 
 from . import _Session
 from .structs import IDENTIFY, IDENTIFY_PROPERTIES, Intents

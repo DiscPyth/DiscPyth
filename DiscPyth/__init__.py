@@ -48,8 +48,8 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     import asyncio
-    from logging import Logger
     import zlib
+    from logging import Logger
 
     import aiohttp
 
@@ -129,6 +129,6 @@ class _Session:
 
 
 from .discpyth import Session
-from .structs import Intents
+from .structs import *
 
 __all__ = ("Session",)
