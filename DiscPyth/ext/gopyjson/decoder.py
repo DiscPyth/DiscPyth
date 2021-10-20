@@ -1,10 +1,11 @@
 """Implementation of JSONDecoder
 """
 import re
-from . import scanner, struct
 from copy import deepcopy
 
-# __all__ = ['JSONDecoder', 'JSONDecodeError']
+from . import scanner, struct
+
+__all__ = ['JSONDecoder', 'JSONDecodeError']
 
 FLAGS = re.VERBOSE | re.MULTILINE | re.DOTALL
 

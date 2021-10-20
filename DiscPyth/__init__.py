@@ -47,58 +47,86 @@ __version__ = "0.1.0"
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .types import IDENTIFY
     import asyncio
-    import aiohttp
     from logging import Logger
+    import zlib
+
+    import aiohttp
+
+    from .structs import IDENTIFY
+
 
 class _Session_Manager:
     pass
 
 
 class _Session:
-    _loop: asyncio.AbstractEventLoop = None
+    __slots__ = (
+        "_loop",
+        "Identify",
+        "MaxRestRetries",
+        "Client",
+        "UserAgent",
+        "LastHeartbeatAck",
+        "LastHeartbeatSent",
+        "_handlers",
+        "_onceHandlers",
+        "_wsConn",
+        "_sequence",
+        "_gateway",
+        "_sessionID",
+        "_buffer",
+        "_inflator",
+        "_log",
+        "_heartbeat",
+    )
 
-    Identify: IDENTIFY = None
+    def __init__(self):
+        self._loop: asyncio.AbstractEventLoop = None
 
-    # Max number of REST API retries
-    MaxRestRetries: int = 3
+        self.Identify: IDENTIFY = None
 
-    # The http client used for REST requests and WSs
-    Client: aiohttp.ClientSession = None
+        # Max number of REST API retries
+        self.MaxRestRetries: int = 3
 
-    # The user agent used for REST APIs
-    UserAgent: str = f"DiscordBot (https://github.com/DiscPyth/DiscPyth, {__version__}) by {__author__}"
+        # The http client used for REST requests and WSs
+        self.Client: aiohttp.ClientSession = None
 
-    # Stores the last HeartbeatAck that was received (in UTC)
-    LastHeartbeatAck: float = 0.0
+        # The user agent used for REST APIs
+        self.UserAgent: str = f"DiscordBot (https://github.com/DiscPyth/DiscPyth, {__version__}) by {__author__}"
 
-    # Stores the last Heartbeat sent (in UTC)
-    LastHeartbeatSent: float = 0.0
+        # Stores the last HeartbeatAck that was received (in UTC)
+        self.LastHeartbeatAck: float = 0.0
 
-    # Event handlers
-    _handlers: None = None
-    _onceHandlers: None = None
+        # Stores the last Heartbeat sent (in UTC)
+        self.LastHeartbeatSent: float = 0.0
 
-    # The websocket connection.
-    _wsConn: aiohttp.ClientWebSocketResponse = None
+        # Event handlers
+        self._handlers: None = None
+        self._onceHandlers: None = None
 
-    # sequence tracks the current gateway api websocket sequence number
-    _sequence: int = None
+        # The websocket connection.
+        self._wsConn: aiohttp.ClientWebSocketResponse = None
 
-    # stores sessions current Discord Gateway
-    _gateway: str = ""
+        # sequence tracks the current gateway api websocket sequence number
+        self._sequence: int = None
 
-    # stores session ID of current Gateway connection
-    _sessionID: str = ""
+        # stores sessions current Discord Gateway
+        self._gateway: str = ""
 
-    # Logger
-    _log: Logger.log = lambda lvl, msg: None
+        # stores session ID of current Gateway connection
+        self._sessionID: str = ""
 
-    # Tasks
-    _listening: asyncio.Future = None
-    _heartbeat: asyncio.Future = None
-    _opened: asyncio.Future = None
+        # for decompressing gateway messages
+        self._buffer: bytearray = None
+        self._inflator: zlib.decompressobj = None
+
+        # Logger
+        self._log: Logger.log = lambda lvl, msg: None
+
+        # Tasks
+        self._heartbeat: asyncio.Future = None
+
 
 from .discpyth import Session
 

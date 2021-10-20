@@ -16,9 +16,10 @@ __all__ = [
 
 __author__ = 'Originally by - Bob Ippolito <bob@redivi.com>, Modified by - 한승민 <hanseungmin.ar@gmail.com>'
 
-from .decoder import JSONDecoder, JSONDecodeError
-from .encoder import JSONEncoder
 import codecs
+
+from .decoder import JSONDecodeError, JSONDecoder
+from .encoder import JSONEncoder
 from .struct import Struct, field
 
 _default_encoder = JSONEncoder(

@@ -1,6 +1,7 @@
 """Implementation of JSONEncoder
 """
 import re
+
 from . import struct
 
 try:

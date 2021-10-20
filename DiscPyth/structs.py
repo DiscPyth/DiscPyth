@@ -1,7 +1,9 @@
-from .ext import gopyjson as gpj
-from typing import List, Tuple, Any
+from typing import Any, List, Tuple
 
-# Dynamically create API types, 'cus hell
+from .ext import gopyjson as gpj
+
+
+# Dynamically create API structs, 'cus hell
 # its time consuming
 def new_type(
     name: str,
@@ -28,9 +30,14 @@ def new_type(
 
 EVENT = new_type(
     "Event",
-    ["Operation", "Sequence", "Type", "Raw_Data"],
+    ["Operation", "Sequence", "Type", "RawData"],
     ["op", "s", "t", "d"],
+    optional_map=[1, 2],
     rawjson_map=[3],
+)
+
+HELLO = new_type(
+    "Hello", ["HeartbeatInterval", "Trace"], ["heartbeat_interval", "_trace"]
 )
 
 IDENTIFY_PROPERTIES = new_type(
@@ -51,4 +58,8 @@ IDENTIFY = new_type(
     ],
     default_map=[(1, IDENTIFY_PROPERTIES())],
     optional_map=[5],
+)
+
+RESUME = new_type(
+    "Resume", ["Token", "SessionID", "Sequence"], ["token", "session_id", "seq"]
 )
