@@ -29,12 +29,12 @@ dp = Session.new("YOUR_TOKEN_HERE")
 dp.Identify.Intents = 513
 try:
 	# Open the connection to Discord
-    dp.open()
+	dp.open()
 except KeyboardInterrupt:
 	# Close the connection
-    dp.close()
+	dp.close()
 	# Stop the loop
-    dp.stop()
+	dp.stop()
 ```
 
 ### Support
