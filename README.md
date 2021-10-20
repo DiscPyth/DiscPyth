@@ -30,7 +30,7 @@ dp.Identify.Intents = 513
 # OR
 dp.set_intents(513)
 # OR (Recommended)
-dp.set_intents(Intents.ALL)
+dp.set_intents((Intents.GUILDS | Intents.GUILD_MESSAGES))
 try:
 	# Open the connection to Discord
 	dp.open()
