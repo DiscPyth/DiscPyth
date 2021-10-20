@@ -33,10 +33,12 @@ To get the best out of your bug reports you can follow these simple steps.
 
 ### Contibution tips:
 
-+ The code follows the [black](https://github.com/psf/black) formatting style, and so should you in your fixes.
++ \* The code follows the [`black`](https://github.com/psf/black) formatting style, and so should you in your fixes.
++ \* We also make use of [`isort`](https://github.com/pycqa/isort/) for sorting imports make sure to use it before opening a pull request!
 + If you are fixing whitespaces (it's an unwanted fix) you must either add it in a valid/wanted fix or completely ignore it.
 + Before modifing/enhancing the code structure you must discuss it first.
-+ Follow the naming convention properly.
++ \* Follow the naming convention properly.
+ > \* Required when contributing. 
 
 ## Licence
 By contributing, you agree that your contributions will be licensed under its MIT License.
