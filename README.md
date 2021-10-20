@@ -22,11 +22,15 @@ Its basically [discordgo](https://github.com/bwmarrin/discordgo/) but in python 
 ### Demo
 
 ```py
-from DiscPyth import Session
+from DiscPyth import Session, Intents
 # Create a new session
 dp = Session.new("YOUR_TOKEN_HERE")
 # Set intents
 dp.Identify.Intents = 513
+# OR
+dp.set_intents(513)
+# OR (Recommended)
+dp.set_intents(Intents.ALL)
 try:
 	# Open the connection to Discord
 	dp.open()

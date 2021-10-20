@@ -129,5 +129,6 @@ class _Session:
 
 
 from .discpyth import Session
+from .structs import Intents
 
 __all__ = ("Session",)

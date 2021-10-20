@@ -3,10 +3,11 @@ from __future__ import annotations
 import asyncio
 import logging
 import sys
+from typing import Literal
 import zlib
 
 from . import _Session
-from .structs import IDENTIFY, IDENTIFY_PROPERTIES
+from .structs import IDENTIFY, IDENTIFY_PROPERTIES, Intents
 from .wsapi import WS_Session
 
 
@@ -19,7 +20,13 @@ class Session(WS_Session, _Session):
         self._loop.run_until_complete(self._open())
 
     def set_intents(self, intents):
-        self.Identify.Intents = intents
+        if isinstance(intents, Intents):
+            self._log(20, f"Setting intents - {intents}...")
+            self.Identify.Intents = intents
+        elif isinstance(intents, int):
+            self._log(20, f"Setting intents - {intents}...")
+            self._log(30, f"You have entered your intents directly, you are advised to use {Intents} instead of specifying it directly!\nIf you know what you are doing then you can safely ignore this warning.")
+            self.Identify.Intents = intents
 
     def close(self):
         self._log(20, f"Woosh, received close command!\nclean closing shard {self.Identify.Shard[0]}...")
@@ -41,7 +48,7 @@ class Session(WS_Session, _Session):
         shard_id: int = 0,
         shard_count: int = 1,
         log: bool = False,
-        level: int = 30,
+        level: Literal[10, 20, 30, 40, 50] = 30,
         to_file: bool = False,
         log_name: str = "",
         trim_logs: bool = True
