@@ -61,6 +61,7 @@ if TYPE_CHECKING:
 
     import aiohttp
 
+    from .eventhandlers import EventTypes
     from .structs import Identify
 
 
@@ -79,6 +80,8 @@ class _Session:
         "last_heartbeat_sent",
         "_handlers",
         "_once_handlers",
+        "_event_types",
+        "_register_event_providers",
         "_ws_conn",
         "_sequence",
         "_gateway",
@@ -111,8 +114,10 @@ class _Session:
         self.last_heartbeat_sent: float = 0.0
 
         # Event handlers
-        self._handlers: None = None
-        self._once_handlers: None = None
+        self._handlers: dict = None
+        self._once_handlers: dict = None
+        self._event_types: EventTypes = None
+        self._register_event_providers = dict()
 
         # The websocket connection.
         self._ws_conn: aiohttp.ClientWebSocketResponse = None

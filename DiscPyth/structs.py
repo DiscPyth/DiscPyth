@@ -111,6 +111,22 @@ class Intents(IntEnum):
     NONE: int = 0
 
 
+class Ready(metaclass=gpj.Struct):
+    """
+    Received after Identifying, contains information such as the gateway version used by DiscPyth and much more
+    https://discord.com/developers/docs/topics/gateway#ready
+    """
+
+    version: int = gpj.field("v")
+    user: dict = gpj.field("user")
+    guilds: list = gpj.field("guilds")
+    session_id: str = gpj.field("session_id")
+    shard: List[int] = gpj.field(
+        "shard", optional=True
+    )  # optional not needed since its only for dumping but ¯\_(ツ)_/¯
+    application: dict = gpj.field("application")
+
+
 class Event(metaclass=gpj.Struct):
     """A class to hold payloads with the data as a raw string
     ```json

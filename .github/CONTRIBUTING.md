@@ -33,12 +33,16 @@ To get the best out of your bug reports you can follow these simple steps.
 
 ### Contibution tips:
 
-+ \* The code follows the [`black`](https://github.com/psf/black) formatting style, and so should you in your fixes.
-+ \* We also make use of [`isort`](https://github.com/pycqa/isort/) for sorting imports make sure to use it before opening a pull request!
++ \* The code follows the [`black`](https://github.com/psf/black) formatting style, and so should you in your fixes. We also make use of [`isort`](https://github.com/pycqa/isort/) for sorting imports make sure to use it before opening a pull request!
+    - To format your changes simply run the following
+```bash
+$ make fmt
+```
++ `__pycache__`s are in `.gitignore` but you can addtionally run `$ make clean` to clean your directory.
 + If you are fixing whitespaces (it's an unwanted fix) you must either add it in a valid/wanted fix or completely ignore it.
 + Before modifing/enhancing the code structure you must discuss it first.
 + \* Follow the naming convention properly.
- > \* Required when contributing. 
+> \* Required when contributing. 
 
 ## Licence
 By contributing, you agree that your contributions will be licensed under its MIT License.
