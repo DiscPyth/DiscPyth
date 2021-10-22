@@ -4,84 +4,18 @@ from typing import Any, List, Tuple
 from .ext import gopyjson as gpj
 
 
-# Dynamically create API structs, 'cus hell
-# its time consuming
-def new_type(
-    name: str,
-    fields: List[str],
-    json: List[str],
-    default_map: List[Tuple[int, Any]] = list(),
-    optional_map: List[int] = list(),
-    rawjson_map: List[int] = list(),
-):
-    d = dict()
-    if len(json) == len(fields):
-        for idx, field in enumerate(fields):
-            d.update(**{field: gpj.field(json[idx])})
-        for i, o in default_map:
-            d[fields[i]].default = o
-        for i in optional_map:
-            d[fields[i]].optional = True
-        for i in rawjson_map:
-            d[fields[i]].raw_json = True
+class ActivityType(IntEnum):
+    """
+    Valid ActivityType values
+    https://discord.com/developers/docs/topics/gateway#activity-object-activity-types
+    """
 
-    ntype = gpj.Struct(name, tuple(), d)
-    return ntype
-
-
-EVENT = new_type(
-    "Event",
-    ["Operation", "Sequence", "Type", "RawData"],
-    ["op", "s", "t", "d"],
-    optional_map=[1, 2],
-    rawjson_map=[3],
-)
-"""A message/payload received by the client from Discord in the following format:
-```
-{
-    "op": OP_CODE, 
-    "t": EVENT_NAME, 
-    "s": SEQUENCE, 
-    "d": PAYLOAD_DATA
-}
-```
-"""
-
-HELLO = new_type(
-    "Hello", ["HeartbeatInterval", "Trace"], ["heartbeat_interval", "_trace"]
-)
-"""[R] The `d` key of the payload with an Operation Code of 10.
-https://discord.com/developers/docs/topics/gateway#hello"""
-
-IDENTIFY_PROPERTIES = new_type(
-    "Identify_Properties", ["os", "browser", "device"], ["$os", "$browser", "$device"]
-)
-"""[S] The `d.properties` key of the payload with an Operation Code of 2.
-https://discord.com/developers/docs/topics/gateway#identify-identify-connection-properties"""
-
-IDENTIFY = new_type(
-    "Identify",
-    ["Token", "Properties", "Compress", "Large", "Shard", "Presence", "Intents"],
-    [
-        "token",
-        "properties",
-        "compress",
-        "large_threshold",
-        "shard",
-        "presence",
-        "intents",
-    ],
-    default_map=[(1, IDENTIFY_PROPERTIES())],
-    optional_map=[5],
-)
-"""[S] The `d` key of the payload with an Operation Code of 2.
-https://discord.com/developers/docs/topics/gateway#identify"""
-
-RESUME = new_type(
-    "Resume", ["Token", "SessionID", "Sequence"], ["token", "session_id", "seq"]
-)
-"""[S] The `d` key of the payload with an Operation Code of 6.
-https://discord.com/developers/docs/topics/gateway#resume-resume-structure"""
+    GAME: int = 0
+    STREAMING: int = 1
+    LISTENING: int = 2
+    WATCHING: int = 3
+    CUSTOM: int = 4
+    COMPETING: int = 5
 
 
 class Permissions(IntEnum):
@@ -175,3 +109,60 @@ class Intents(IntEnum):
     )
     ALL: int = ALL_WITHOUT_PRIVILEGED | GUILD_MEMBERS | GUILD_PRESENCES
     NONE: int = 0
+
+
+class Event(metaclass=gpj.Struct):
+    """A class to hold payloads with the data as a raw string
+    ```json
+    {
+        "op": OPERATION__CODE,
+        "s": SEQUENCE,
+        "t": EVENT_NAME,
+        "d": PAYLOAD_DATA_AS_STRING
+    }
+    ```
+    """
+
+    operation: int = gpj.field("op")
+    type: int = gpj.field("t")
+    sequence: int = gpj.field("s")
+    raw_data: str = gpj.field("d", raw_json=True)
+
+
+class Hello(metaclass=gpj.Struct):
+    """
+    A class to hold the data for the HELLO Payload recieved from Discord,
+    https://discord.com/developers/docs/topics/gateway#hello
+    """
+
+    heartbeat_interval: int = gpj.field("heartbeat_interval")
+    trace: str = gpj.field("_trace")
+
+
+class IdentifyProperties(metaclass=gpj.Struct):
+    """
+    Properties Object of the Identify payload,
+    https://discord.com/developers/docs/topics/gateway#identify-identify-connection-properties
+    """
+
+    os: str = gpj.field("$os")
+    browser: str = gpj.field("$browser")
+    device: str = gpj.field("$device")
+
+
+class Identify(metaclass=gpj.Struct):
+    """
+    Identify Payload, sent after establishing a connection with Discord and receiving the HELLO Payload,
+    Used to Identify the Bot Account with the gateway and start receiving events for the bot.
+    https://discord.com/developers/docs/topics/gateway#identify
+    """
+
+    token: str = gpj.field("token")
+    properties: IdentifyProperties = gpj.field(
+        "properties", default=IdentifyProperties()
+    )
+    compress: bool = gpj.field("compress", optional=True)
+    large_threshold: int = gpj.field("large_threshold", optional=True)
+    shard: List[int] = gpj.field("shard", optional=True)
+    presence: dict = gpj.field("presence", optional=True)
+    intents: int = gpj.field("intents")

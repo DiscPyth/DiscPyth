@@ -2,11 +2,13 @@
 """
 import re
 
-__all__ = ['make_scanner']
+__all__ = ["make_scanner"]
 
 NUMBER_RE = re.compile(
-    r'(-?(?:0|[1-9]\d*))(\.\d+)?([eE][-+]?\d+)?',
-    (re.VERBOSE | re.MULTILINE | re.DOTALL))
+    r"(-?(?:0|[1-9]\d*))(\.\d+)?([eE][-+]?\d+)?",
+    (re.VERBOSE | re.MULTILINE | re.DOTALL),
+)
+
 
 def py_make_scanner(context):
     parse_object = context.parse_object
@@ -28,20 +30,28 @@ def py_make_scanner(context):
             raise StopIteration(idx) from None
         if nextchar == '"':
             return parse_string(string, idx + 1, strict)
-        elif nextchar == '{':
-            return parse_object((string, idx + 1), strict,
-                _scan_once, object_hook, object_pairs_hook, obj, raw, memo)
-        elif nextchar == '[':
+        elif nextchar == "{":
+            return parse_object(
+                (string, idx + 1),
+                strict,
+                _scan_once,
+                object_hook,
+                object_pairs_hook,
+                obj,
+                raw,
+                memo,
+            )
+        elif nextchar == "[":
             return parse_array((string, idx + 1), _scan_once, obj, raw)
-        elif nextchar == 'n' and string[idx:idx + 4] == 'null':
+        elif nextchar == "n" and string[idx : idx + 4] == "null":
             if raw:
                 return "null", idx + 4
             return None, idx + 4
-        elif nextchar == 't' and string[idx:idx + 4] == 'true':
+        elif nextchar == "t" and string[idx : idx + 4] == "true":
             if raw:
                 return "true", idx + 4
             return True, idx + 4
-        elif nextchar == 'f' and string[idx:idx + 5] == 'false':
+        elif nextchar == "f" and string[idx : idx + 5] == "false":
             if raw:
                 return "false", idx + 5
             return False, idx + 5
@@ -50,22 +60,22 @@ def py_make_scanner(context):
         if m is not None:
             integer, frac, exp = m.groups()
             if frac or exp:
-                res = parse_float(integer + (frac or '') + (exp or ''))
+                res = parse_float(integer + (frac or "") + (exp or ""))
             else:
                 res = parse_int(integer)
             return res, m.end()
-        elif nextchar == 'N' and string[idx:idx + 3] == 'NaN':
+        elif nextchar == "N" and string[idx : idx + 3] == "NaN":
             if raw:
                 return "NaN", idx + 3
-            return parse_constant('NaN'), idx + 3
-        elif nextchar == 'I' and string[idx:idx + 8] == 'Infinity':
+            return parse_constant("NaN"), idx + 3
+        elif nextchar == "I" and string[idx : idx + 8] == "Infinity":
             if raw:
                 return "Infinity", idx + 8
-            return parse_constant('Infinity'), idx + 8
-        elif nextchar == '-' and string[idx:idx + 9] == '-Infinity':
+            return parse_constant("Infinity"), idx + 8
+        elif nextchar == "-" and string[idx : idx + 9] == "-Infinity":
             if raw:
                 return "-Infinity", idx + 9
-            return parse_constant('-Infinity'), idx + 9
+            return parse_constant("-Infinity"), idx + 9
         else:
             raise StopIteration(idx)
 
@@ -76,5 +86,6 @@ def py_make_scanner(context):
             memo.clear()
 
     return scan_once
+
 
 make_scanner = py_make_scanner

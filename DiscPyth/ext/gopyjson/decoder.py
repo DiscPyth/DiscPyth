@@ -5,7 +5,7 @@ from copy import deepcopy
 
 from . import scanner, struct
 
-__all__ = ['JSONDecoder', 'JSONDecodeError']
+__all__ = ["JSONDecoder", "JSONDecodeError"]
 
 FLAGS = re.VERBOSE | re.MULTILINE | re.DOTALL
 
@@ -149,7 +149,7 @@ def JSONObject(
     _ws=WHITESPACE_STR,
 ):
     s, end = s_and_end
-    end1 = end-1
+    end1 = end - 1
     pairs = []
     rjs = ""
     object_ = deepcopy(obj)
@@ -216,7 +216,7 @@ def JSONObject(
         try:
             value, end = scan_once(s, end, obj=objectfield, raw=rwj)
             if isinstance(value, str):
-                value = value.replace("\"", "\"").replace("\n","").replace("\t", "")
+                value = value.replace('"', '"').replace("\n", "").replace("\t", "")
         except StopIteration as err:
             raise JSONDecodeError("Expecting value", s, err.value) from None
         pairs_append((key, value))
@@ -246,7 +246,7 @@ def JSONObject(
     if object_pairs_hook is not None:
         result = object_pairs_hook(pairs)
         return result, end
-    
+
     if not raw_json:
         if isinstance(type(object_), struct.Struct):
             pairs = object_
@@ -260,9 +260,11 @@ def JSONObject(
     return pairs, end
 
 
-def JSONArray(s_and_end, scan_once, obj, raw_json=False, _w=WHITESPACE.match, _ws=WHITESPACE_STR):
+def JSONArray(
+    s_and_end, scan_once, obj, raw_json=False, _w=WHITESPACE.match, _ws=WHITESPACE_STR
+):
     s, end = s_and_end
-    end1 = end-1
+    end1 = end - 1
     values = []
     nextchar = s[end : end + 1]
     if nextchar in _ws:

@@ -2,13 +2,15 @@ import asyncio
 import sys
 import time
 import zlib
+from typing import Literal
 
 import aiohttp
 
 from . import _Session
 from .ext import gopyjson as gpj
-from .structs import (EVENT, HELLO, IDENTIFY, IDENTIFY_PROPERTIES, RESUME,
-                      new_type)
+from .structs import Event, Hello
+
+__all__ = ("WS_Session",)
 
 ZLIB_SUFFIX = b"\x00\x00\xff\xff"
 
@@ -43,45 +45,45 @@ ErrWS = new_error("ErrWS")
 
 class WS_Session(_Session):
     async def _open(self):
-        if self.Client is None:
+        if self.client is None:
 
-            self.Client = aiohttp.ClientSession()
-        if self._wsConn is not None:
+            self.client = aiohttp.ClientSession()
+        if self._ws_conn is not None:
             raise ErrWSAlreadyOpen
         if self._gateway == "":
-            self._gateway = "wss://gateway.discord.gg/?v=9&encoding=json"
-        self._wsConn = await self.Client.ws_connect(self._gateway)
+            self._gateway = "wss://gateway.discord.gg/?v=8&encoding=json"
+        self._ws_conn = await self.client.ws_connect(self._gateway)
         e = await self._on_event()
 
-        if e.Operation != 10:
+        if e.operation != 10:
             raise ErrWS(
-                f"Shard {self.Identify.Shard[0]} expected Operation Code 10, instead got {e.Operation}"
+                f"Shard {self.identify.shard[0]} expected Operation Code 10, instead got {e.operation}"
             )
         else:
-            self._log(20, f"Shard {self.Identify.Shard[0]} has received Hello Payload!")
+            self._log(20, f"Shard {self.identify.shard[0]} has received Hello Payload!")
 
-        h = gpj.loads(e.RawData, HELLO())
-        self.LastHeartbeatAck = time.time()
+        h = gpj.loads(e.raw_data, Hello())
+        self.last_heartbeat_ack = time.time()
 
-        if self._sessionID == "" and self._sequence is None:
-            await self._send_payload(2, self.Identify)
-        else:
-            await self._send_payload(6, self._resume)
+        if self._session_id == "" and self._sequence is None:
+            await self._send_payload(2, self.identify)
+        # else:
+        # await self._send_payload(6, self._resume)
 
         e = await self._on_event()
 
-        if e.Type not in ("READY", "RESUMED"):
+        if e.type not in ("READY", "RESUMED"):
             self._log(
                 30,
-                f'Shard {self.Identify.Shard[0]} expected "READY" or "RESUMED" event instead got "{e.Type}"',
+                f'Shard {self.identify.shard[0]} expected "READY" or "RESUMED" event instead got "{e.type}"',
             )
         else:
-            self._log(20, f'Shard {self.Identify.Shard[0]} has received "{e.Type}"')
+            self._log(20, f'Shard {self.identify.shard[0]} has received "{e.type}"')
 
-        self._log(20, f"Heartbeat Interval is {h.HeartbeatInterval} milliseconds")
+        self._log(20, f"Heartbeat Interval is {h.heartbeat_interval} milliseconds")
 
         self._heartbeat = self._loop.create_task(
-            self._t_heartbeat((h.HeartbeatInterval / 1000))
+            self._t_heartbeat((h.heartbeat_interval / 1000))
         )
 
         while True:
@@ -92,61 +94,62 @@ class WS_Session(_Session):
                 break
 
     async def _on_event(self):
-        r = await self._wsConn.receive()
+        r = await self._ws_conn.receive()
         if r.type in (aiohttp.WSMsgType.BINARY, aiohttp.WSMsgType.TEXT):
-            msg = gpj.loads(r.data, EVENT())
+            msg = gpj.loads(r.data, Event())
             self._log(
                 10,
-                f"Operation : {msg.Operation}, Sequence : {msg.Sequence}, Type : {msg.Type}, Data : {msg.RawData}",
+                f"Operation : {msg.operation}, Sequence : {msg.sequence}, Type : {msg.type}, Data : {msg.raw_data}",
             )
-            if msg.Operation == 1:
+            if msg.operation == 1:
                 self._log(
                     20,
-                    f"Shard {self.Identify.Shard[0]} received Operation Code 1 responding with a heartbeat...",
+                    f"Shard {self.identify.shard[0]} received Operation Code 1 responding with a heartbeat...",
                 )
                 await self._send_payload(1, self._sequence)
                 return msg
-            if msg.Operation == 7:
+            if msg.operation == 7:
                 self._log(
                     20,
-                    f"Shard {self.Identify.Shard[0]} is reopening connection in response to Operation Code 7",
+                    f"Shard {self.identify.shard[0]} is reopening connection in response to Operation Code 7",
                 )
                 await self._close_w_code(aiohttp.WSCloseCode.SERVICE_RESTART)
                 await self._reconnect()
-            if msg.Operation == 9:
-                if msg.RawData == "true":
+            if msg.operation == 9:
+                if msg.raw_data == "true":
                     self._log(
                         20,
-                        f"Session for Shard {self.Identify.Shard[0]} has been invalidated, but is resumeable, resuming....",
+                        f"Session for Shard {self.identify.shard[0]} has been invalidated, but is resumeable, resuming....",
                     )
-                    await self._send_payload(6, self._resume)
+                    # await self._send_payload(6, self._resume)
                 else:
                     self._log(
                         20,
-                        f"Session for Shard {self.Identify.Shard[0]} has been invalidated, amd is not resumeable, identifying....",
+                        f"Session for Shard {self.identify.shard[0]} has been invalidated, amd is not resumeable, identifying....",
                     )
-                    await self._send_payload(2, self.Identify)
-            if msg.Operation == 10:
+                    await self._send_payload(2, self.identify)
+            if msg.operation == 10:
                 return msg
-            if msg.Operation == 11:
+            if msg.operation == 11:
                 self._log(
                     20,
-                    f"Shard {self.Identify.Shard[0]} has received Heartbeat Acknowledgement!",
+                    f"Shard {self.identify.shard[0]} has received Heartbeat Acknowledgement!",
                 )
                 self.LastHeartbeatAck = time.time()
                 self._log(20, f"Heartbeat latency is {self.heartbeat_latency}.")
                 return msg
-            if msg.Operation == 0:
-                self._log(
-                    20, f'Shard {self.Identify.Shard[0]} Gateway event - "{msg.Type}"'
-                )
-                return msg
-            else:
+            if msg.operation != 0:
                 self._log(
                     20,
-                    f"Shard {self.Identify.Shard[0]} has received an unknown Operation Code {msg.Operation}",
+                    f"Shard {self.identify.shard[0]} has received an unknown Operation Code {msg.operation}",
                 )
                 return msg
+
+            self._log(
+                20, f'Shard {self.identify.shard[0]} Gateway event - "{msg.type}"'
+            )
+            return msg
+
         if r.type in (
             aiohttp.WSMsgType.CLOSED,
             aiohttp.WSMsgType.CLOSING,
@@ -166,55 +169,50 @@ class WS_Session(_Session):
             payload = payload.decompress("utf-8")
             self._buffer = bytearray()
 
-        return gpj.loads(payload, EVENT())
+        return gpj.loads(payload, Event())
 
     async def _send_payload(self, op, data):
-        e = EVENT()
-        e.Operation = op
-        e.RawData = data
+        e = Event()
+        e.operation = op
+        e.raw_data = data
         raw_payload = gpj.dumps(e)
-        await self._wsConn.send_str(raw_payload)
+        await self._ws_conn.send_str(raw_payload)
 
     async def _t_heartbeat(self, delay):
         while True:
-            last = self.LastHeartbeatAck
-            self.LastHeartbeatSent = time.time()
+            last = self.last_heartbeat_ack
+            self.last_heartbeat_sent = time.time()
             await self._send_payload(1, self._sequence)
-            if (time.time()-last) > (delay*5):
-                self._log(40, f"Haven't received a Heartbeat Acknowledgement in {time.time()-last}, reconnecting...")
+            if (time.time() - last) > (delay * 5):
+                self._log(
+                    40,
+                    f"Haven't received a Heartbeat Acknowledgement in {time.time()-last}, reconnecting...",
+                )
                 await self._close_w_code()
                 await self._reconnect()
             await asyncio.sleep(delay)
 
     @property
     def heartbeat_latency(self):
-        return self.LastHeartbeatAck-self.LastHeartbeatSent
-
-    @property
-    def _resume(self):
-        r = RESUME()
-        r.Token = self.Identify.Token
-        r.SessionID = self._sessionID
-        r.Sequence = self._sequence
-        return r
+        return self.last_heartbeat_ack - self.last_heartbeat_sent
 
     async def _close_w_code(self, code=None):
 
         if self._heartbeat is not None:
             self._heartbeat.cancel()
 
-        if self._wsConn is not None:
+        if self._ws_conn is not None:
             if code is not None:
-                await self._wsConn.close(code=code)
+                await self._ws_conn.close(code=code)
             else:
-                await self._wsConn.close()
+                await self._ws_conn.close()
 
     async def _reconnect(self):
         try:
-            self._opened = self._loop.create_task(self._open())
+            self._opened = self._loop.run_until_complete(self._open())
         except ErrWSAlreadyOpen:
             self._log(
                 30,
-                f"Shard {self.Identify.Shard[0]} already open, no need to reconnect!",
+                f"Shard {self.identify.shard[0]} already open, no need to reconnect!",
             )
             pass

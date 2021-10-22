@@ -1,4 +1,4 @@
-__all__ = ['Struct', 'field', 'getit', 'assign', 'Mapping', 'lock']
+__all__ = ["Struct", "field", "getit", "assign", "Mapping", "lock"]
 
 # Main metaclass Struct
 class Struct(type):
@@ -13,9 +13,11 @@ class Struct(type):
             for k, v in d.items():
                 if isinstance(v, Fields):
                     dd.append(k)
-                    tmaps.update(**{v.json:Mapping(k, v.default, v.raw_json, v.optional)})
-                    timaps.update(**{k:v.json})
-                    if (v.default is MISSING):
+                    tmaps.update(
+                        **{v.json: Mapping(k, v.default, v.raw_json, v.optional)}
+                    )
+                    timaps.update(**{k: v.json})
+                    if v.default is MISSING:
                         setattr(x, k, None)
                     else:
                         setattr(x, k, v.default)
@@ -30,8 +32,8 @@ class Struct(type):
     def __repr__(self):
         return f"<class '{__name__}.Struct.{self.__name__}'>"
 
-class BaseStruct():
 
+class BaseStruct:
     def __setattr__(self, name, value):
         if name in self.__slots__:
             super().__setattr__(name, value)
@@ -42,7 +44,7 @@ class BaseStruct():
         ret = []
         for k in self.__slots__:
             attr = getattr(self, k)
-            if k != "__mappings__": 
+            if k != "__mappings__":
                 if k != "__inversemaps__":
                     if mm[m[k]].optional and attr is None:
                         pass
@@ -50,10 +52,12 @@ class BaseStruct():
                         ret.append((m[k], attr))
         return ret
 
+
 # Missing object
-class MISSING():
+class MISSING:
     def __repr__(self) -> str:
         return "..."
+
 
 # Fields Class to store feild data
 class Fields:
@@ -64,6 +68,7 @@ class Fields:
         self.json = json
         self.raw_json = raw_json
         self.optional = optional
+
 
 # Fields Class instance generator
 def field(json, default=MISSING, raw_json=False, optional=False):
@@ -94,5 +99,6 @@ def assign(obj, map: Mapping, value):
         if isinstance(type(obj), Struct):
             setattr(obj, x.name, value)
 
+
 def lock(o):
-    o.__setattr__ = lambda name, value : None
+    o.__setattr__ = lambda name, value: None

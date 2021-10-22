@@ -4,15 +4,23 @@
 It is mainly inspired from `discordgo` (https://github.com/bwmarrin/discordgo) which is another wonderful wrapper for the Discord API in GO.
 
 ```py
-from DiscPyth import new
-
-def main():
-    # create a new session
-    dpth = new("YOUR_TOKEN_HERE")
-    # open connection to discord
-    dpth.open()
-# run
-main()
+from DiscPyth import Session, Intents
+# Create a new session
+dp = Session.new("YOUR_TOKEN_HERE")
+# Set intents
+dp.Identify.Intents = 513
+# OR
+dp.set_intents(513)
+# OR (Recommended)
+dp.set_intents((Intents.GUILDS | Intents.GUILD_MESSAGES))
+try:
+	# Open the connection to Discord
+	dp.open()
+except KeyboardInterrupt:
+	# Close the connection
+	dp.close()
+	# Stop the loop
+	dp.stop()
 ```
 
 ---------------------------------
@@ -53,7 +61,7 @@ if TYPE_CHECKING:
 
     import aiohttp
 
-    from .structs import IDENTIFY
+    from .structs import Identify
 
 
 class _Session_Manager:
@@ -63,18 +71,18 @@ class _Session_Manager:
 class _Session:
     __slots__ = (
         "_loop",
-        "Identify",
-        "MaxRestRetries",
-        "Client",
-        "UserAgent",
-        "LastHeartbeatAck",
-        "LastHeartbeatSent",
+        "identify",
+        "max_rest_retries",
+        "client",
+        "user_agent",
+        "last_heartbeat_ack",
+        "last_heartbeat_sent",
         "_handlers",
-        "_onceHandlers",
-        "_wsConn",
+        "_once_handlers",
+        "_ws_conn",
         "_sequence",
         "_gateway",
-        "_sessionID",
+        "_session_id",
         "_buffer",
         "_inflator",
         "_log",
@@ -84,29 +92,29 @@ class _Session:
     def __init__(self):
         self._loop: asyncio.AbstractEventLoop = None
 
-        self.Identify: IDENTIFY = None
+        self.identify: Identify = None
 
         # Max number of REST API retries
-        self.MaxRestRetries: int = 3
+        self.max_rest_retries: int = 3
 
         # The http client used for REST requests and WSs
-        self.Client: aiohttp.ClientSession = None
+        self.client: aiohttp.ClientSession = None
 
         # The user agent used for REST APIs
-        self.UserAgent: str = f"DiscordBot (https://github.com/DiscPyth/DiscPyth, {__version__}) by {__author__}"
+        self.user_agent: str = f"DiscordBot (https://github.com/DiscPyth/DiscPyth, {__version__}) by {__author__}"
 
         # Stores the last HeartbeatAck that was received (in UTC)
-        self.LastHeartbeatAck: float = 0.0
+        self.last_heartbeat_ack: float = 0.0
 
         # Stores the last Heartbeat sent (in UTC)
-        self.LastHeartbeatSent: float = 0.0
+        self.last_heartbeat_sent: float = 0.0
 
         # Event handlers
         self._handlers: None = None
-        self._onceHandlers: None = None
+        self._once_handlers: None = None
 
         # The websocket connection.
-        self._wsConn: aiohttp.ClientWebSocketResponse = None
+        self._ws_conn: aiohttp.ClientWebSocketResponse = None
 
         # sequence tracks the current gateway api websocket sequence number
         self._sequence: int = None
@@ -115,7 +123,7 @@ class _Session:
         self._gateway: str = ""
 
         # stores session ID of current Gateway connection
-        self._sessionID: str = ""
+        self._session_id: str = ""
 
         # for decompressing gateway messages
         self._buffer: bytearray = None

@@ -6,10 +6,10 @@ here = pathlib.Path(__file__).parent.resolve()
 
 long_description = (here / "README.md").read_text(encoding="utf-8")
 
-    
+
 setup(
     name="DiscPyth",
-    version="0.1.0+planning-stage", #semver
+    version="0.1.0+planning-stage",  # semver
     description="DiscPyth is an unofficial wrapper in python for the official Discord API.",
     long_description=long_description,
     long_description_content_type="text/markdown",
