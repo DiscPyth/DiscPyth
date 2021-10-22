@@ -86,6 +86,7 @@ class _Session:
         "_buffer",
         "_inflator",
         "_log",
+        "_trim_logs",
         "_heartbeat",
     )
 
@@ -131,6 +132,7 @@ class _Session:
 
         # Logger
         self._log: Logger.log = lambda lvl, msg: None
+        self._trim_logs = True
 
         # Tasks
         self._heartbeat: asyncio.Future = None

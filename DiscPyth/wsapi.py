@@ -51,7 +51,7 @@ class WS_Session(_Session):
         if self._ws_conn is not None:
             raise ErrWSAlreadyOpen
         if self._gateway == "":
-            self._gateway = "wss://gateway.discord.gg/?v=8&encoding=json"
+            self._gateway = "wss://gateway.discord.gg/?v=9&encoding=json"
         self._ws_conn = await self.client.ws_connect(self._gateway)
         e = await self._on_event()
 
@@ -99,7 +99,7 @@ class WS_Session(_Session):
             msg = gpj.loads(r.data, Event())
             self._log(
                 10,
-                f"Operation : {msg.operation}, Sequence : {msg.sequence}, Type : {msg.type}, Data : {msg.raw_data}",
+                f"Operation : {msg.operation}, Sequence : {msg.sequence}, Type : {msg.type}, Data : {msg.raw_data if msg.raw_data == 'null' or len(msg.raw_data) <= 20 else (msg.raw_data if not self._trim_logs else msg.raw_data[:10]+'...(Showing first and last 10 chars)...'+msg.raw_data[-10:]) }",
             )
             if msg.operation == 1:
                 self._log(

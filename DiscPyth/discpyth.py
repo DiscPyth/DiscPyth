@@ -86,7 +86,8 @@ class Session(WS_Session, Event_Session, _Session):
                 logger.addHandler(file_handler)
 
             s._log = logger.log
-
+        if not trim_logs:
+            self._trim_logs = False
         s.identify = Identify()
         properties = IdentifyProperties()
         properties.os = sys.platform
