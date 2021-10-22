@@ -45,3 +45,9 @@ except KeyboardInterrupt:
 The support server : [DiscPyth](https://discord.gg/8RATdNBs6n)
 
 Documentation : `WIP`
+
+### Contibuting
+
+Contibutions are more than welcomed 😄\
+But first make sure to read through our [Contribution Guidelines](.github/CONTRIBUTING.md).
+> Don't worry it isn't a big-fat 1000 line TnS, just some tips and info about what is accepted and what is not.
