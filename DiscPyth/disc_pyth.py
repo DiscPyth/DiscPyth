@@ -3,26 +3,23 @@ from __future__ import annotations
 import asyncio
 import logging
 import sys
-import zlib
-from typing import TYPE_CHECKING, Literal
+from typing import Literal
 
-from . import _Session
-from .event import Event_Session
+from . import _Session  # pylint: disable=cyclic-import
 from .structs import Identify, IdentifyProperties, Intents
-from .wsapi import WS_Session
+from .wsapi import WsSession  # pylint: disable=cyclic-import
 
 
-class Session(WS_Session, Event_Session, _Session):
+class Session(WsSession, _Session):
     def __init__(self):
-        Event_Session.__init__(self)
-        WS_Session.__init__(self)
+        WsSession.__init__(self)
         _Session.__init__(self)
 
     def open(self):
         self._loop.run_until_complete(self._open())
 
     def set_intents(self, intents):
-        if isinstance(intents, Intents) or isinstance(intents, int):
+        if isinstance(intents, (Intents, int)):
             self._log(20, f"Setting intents - {intents}...")
             self.identify.intents = intents
         else:
@@ -48,7 +45,7 @@ class Session(WS_Session, Event_Session, _Session):
         self._loop.stop()
 
     @classmethod
-    def new(
+    def new(  # pylint: disable=too-many-arguments;
         cls,
         token: str,
         shard_id: int = 0,
@@ -59,11 +56,9 @@ class Session(WS_Session, Event_Session, _Session):
         log_name: str = "",
         trim_logs: bool = True,
     ) -> Session:
-        s = cls()
+        s_instance = cls()
 
-        s._loop = asyncio.get_event_loop()
-        s._buffer = bytearray()
-        s._inflator = zlib.decompressobj()
+        s_instance._loop = asyncio.get_event_loop()
 
         if log:
             if level not in (10, 20, 30, 40, 50):
@@ -73,7 +68,7 @@ class Session(WS_Session, Event_Session, _Session):
             logger = logging.getLogger(f"DiscPyth{log_name}")
             logger.setLevel(10)
             formatter = logging.Formatter(
-                f"[%(name)s] | [%(asctime)s] | [%(levelname)s] : %(message)s"
+                "[%(name)s] | [%(asctime)s] | [%(levelname)s] : %(message)s"
             )
             stream_handler = logging.StreamHandler()
             stream_handler.setLevel(level)
@@ -85,18 +80,18 @@ class Session(WS_Session, Event_Session, _Session):
                 file_handler.setFormatter(formatter)
                 logger.addHandler(file_handler)
 
-            s._log = logger.log
+            s_instance._log = logger.log
         if not trim_logs:
-            self._trim_logs = False
-        s.identify = Identify()
+            s_instance._trim_logs = False
+        s_instance.identify = Identify()
         properties = IdentifyProperties()
-        properties.os = sys.platform
+        properties.operating_sys = sys.platform
         properties.browser = "DiscPyth"
         properties.device = "DiscPyth"
-        s.identify.token = token.strip()
-        s.identify.properties = properties
-        s.identify.compress = False
-        s.identify.large_threshold = 250
-        s.identify.shard = [shard_id, shard_count]
+        s_instance.identify.token = token.strip()
+        s_instance.identify.properties = properties
+        s_instance.identify.compress = False
+        s_instance.identify.large_threshold = 250
+        s_instance.identify.shard = [shard_id, shard_count]
 
-        return s
+        return s_instance

@@ -52,11 +52,11 @@ from __future__ import annotations
 __author__ = "arHSM"
 __version__ = "0.1.0"
 
+import zlib
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     import asyncio
-    import zlib
     from logging import Logger
 
     import aiohttp
@@ -64,11 +64,9 @@ if TYPE_CHECKING:
     from .structs import Identify
 
 
-class _Session_Manager:
-    pass
-
-
 class _Session:
+    # pylint: disable=too-many-instance-attributes
+    # pylint: disable=too-few-public-methods
     __slots__ = (
         "_loop",
         "identify",
@@ -129,8 +127,8 @@ class _Session:
         self._session_id: str = ""
 
         # for decompressing gateway messages
-        self._buffer: bytearray = None
-        self._inflator: zlib.decompressobj = None
+        self._buffer: bytearray = bytearray()
+        self._inflator: zlib.decompressobj = zlib.decompressobj()
 
         # Logger
         self._log: Logger.log = lambda lvl, msg: None
@@ -140,7 +138,7 @@ class _Session:
         self._heartbeat: asyncio.Future = None
 
 
-from .discpyth import Session
-from .structs import *
+from .disc_pyth import Session  # pylint: disable=wrong-import-position # noqa: E402
+from .structs import *  # pylint: disable=wrong-import-position # noqa: E402, F401, F403
 
 __all__ = ("Session",)

@@ -1,0 +1,15 @@
+[tool.isort]
+profile = 'black'
+
+[tool.pylint.messages_control]
+disable = "C0330, C0326, C0301, R0903, W1203, C0116, C0115, C0114"
+
+[tool.pylint.format]
+max-line-length = "88"
+
+[build-system]
+requires = [
+    "setuptools>=42",
+    "wheel"
+]
+build-backend = "setuptools.build_meta"

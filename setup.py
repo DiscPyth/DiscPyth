@@ -6,9 +6,20 @@ here = pathlib.Path(__file__).parent.resolve()
 
 long_description = (here / "README.md").read_text(encoding="utf-8")
 
+e_require = {
+    "dev": [
+        "Sphinx==4.2.0",
+        "pycodestyle==2.8.0",
+        "pylint==2.11.1",
+        "black==21.9b0",
+        "flake8==4.0.1",
+        "isort==5.9.3",
+        "mypy==0.910",
+    ]
+}
 
 setup(
-    name="DiscPyth",
+    name="discpyth",
     version="0.1.0+planning-stage",  # semver
     description="DiscPyth is an unofficial wrapper in python for the official Discord API.",
     long_description=long_description,
@@ -17,7 +28,7 @@ setup(
     author="arHSM",
     author_email="hanseungmin.ar@gmail.com",
     classifiers=[
-        "Development Status :: 1 - Planning",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Topic :: Software Development :: Build Tools",
         "License :: OSI Approved :: MIT License",
@@ -26,7 +37,8 @@ setup(
     ],
     packages=find_packages(where="DiscPyth"),
     python_requires=">=3.8",
-    install_requires=["aiohttp"],
+    install_requires=["aiohttp", "gopyjson"],
+    extras_require=e_require,
     project_urls={
         "Source": "https://github.com/DiscPyth/DiscPyth/",
     },

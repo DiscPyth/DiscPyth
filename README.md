@@ -22,27 +22,26 @@ Its basically [discordgo](https://github.com/bwmarrin/discordgo/) but in python 
 ### Demo
 
 ```py
-from DiscPyth import Session, Intents
+import discpyth
+
 # Create a new session
-dp = Session.new("YOUR_TOKEN_HERE")
+dp = discpyth.Session.new("YOUR_TOKEN_HERE")
 # Set intents
-dp.Identify.Intents = 513
-# OR
-dp.set_intents(513)
-# OR (Recommended)
-dp.set_intents((Intents.GUILDS | Intents.GUILD_MESSAGES))
+dp.set_intents((discpyth.Intents.GUILDS | discpyth.Intents.GUILD_MESSAGES))
+
+
 try:
-	# Open the connection to Discord
-	dp.open()
+    # Open the connection to Discord
+    dp.open()
 except KeyboardInterrupt:
-	# Close the connection
-	dp.close()
-	# Stop the loop
-	dp.stop()
+    # Close the connection
+    dp.close()
+    # Stop the loop
+    dp.stop()
 ```
 
 ### Support
 
-The support server : [Code Crash](https://discord.gg/8RATdNBs6n)
+The support server : [DiscPyth](https://discord.gg/8RATdNBs6n)
 
 Documentation : `WIP`

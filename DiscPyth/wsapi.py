@@ -1,16 +1,14 @@
 import asyncio
-import sys
 import time
-import zlib
-from typing import Literal
+from typing import Optional
 
 import aiohttp
+import gopyjson as gpj  # type: ignore
 
 from . import _Session
-from .ext import gopyjson as gpj
 from .structs import Event, Hello
 
-__all__ = ("WS_Session",)
+__all__ = ("WsSession",)
 
 ZLIB_SUFFIX = b"\x00\x00\xff\xff"
 
@@ -20,19 +18,19 @@ def new_error(name: str, output=None) -> Exception:
     # could have just done Exception.__init__
     # but whatever 🙄
     # https://stackoverflow.com/questions/43778914/python3-using-super-in-eq-methods-raises-runtimeerror-super-class/43779009#43779009
-    __class__ = Exception
+    __class__ = Exception  # pylint: disable=unused-variable # noqa: F841
 
-    def replacedinit(self):
+    def replacedinit(self):  # pylint: disable=unused-argument;
         super().__init__(output)
 
     # Quick way to create a class
-    err = type(str(name), (Exception,), dict())
+    err = type(str(name), (Exception,), {})
     if output is not None:
         # Replace __init__ if output is defined,
         # better than new_error("Error")("Output")
         # instead new_error("Error", "Output")
         setattr(err, "__init__", replacedinit)
-    return err
+    return err  # type: ignore
 
 
 ErrWSAlreadyOpen = new_error("ErrWSAlreadyOpen", "WebSocket already open!")
@@ -43,7 +41,7 @@ ErrWSClosed = new_error("ErrWSClosed", "WebSocket is closed!")
 ErrWS = new_error("ErrWS")
 
 
-class WS_Session(_Session):
+class WsSession(_Session):  # pylint: disable=too-many-instance-attributes;
     async def _open(self):
         if self.client is None:
 
@@ -53,16 +51,19 @@ class WS_Session(_Session):
         if self._gateway == "":
             self._gateway = "wss://gateway.discord.gg/?v=9&encoding=json"
         self._ws_conn = await self.client.ws_connect(self._gateway)
-        e = await self._on_event()
+        e = await self._on_event()  # pylint: disable=invalid-name
 
         if e.operation != 10:
             raise ErrWS(
                 f"Shard {self.identify.shard[0]} expected Operation Code 10, instead got {e.operation}"
             )
-        else:
-            self._log(20, f"Shard {self.identify.shard[0]} has received Hello Payload!")
 
-        h = gpj.loads(e.raw_data, Hello())
+        self._log(
+            20,
+            f"Shard {self.identify.shard[0]} has received Hello Payload!",
+        )
+
+        h = gpj.loads(e.raw_data, Hello())  # pylint: disable=invalid-name
         self.last_heartbeat_ack = time.time()
 
         if self._session_id == "" and self._sequence is None:
@@ -70,7 +71,7 @@ class WS_Session(_Session):
         # else:
         # await self._send_payload(6, self._resume)
 
-        e = await self._on_event()
+        e = await self._on_event()  # pylint: disable=invalid-name
 
         if e.type not in ("READY", "RESUMED"):
             self._log(
@@ -90,11 +91,10 @@ class WS_Session(_Session):
             try:
                 await self._on_event()
             except ErrWSClosed:
-                pass
                 break
 
     async def _on_event(self):
-        r = await self._ws_conn.receive()
+        r = await self._ws_conn.receive()  # pylint: disable=invalid-name
         if r.type in (aiohttp.WSMsgType.BINARY, aiohttp.WSMsgType.TEXT):
             msg = gpj.loads(r.data, Event())
             self._log(
@@ -135,7 +135,7 @@ class WS_Session(_Session):
                     20,
                     f"Shard {self.identify.shard[0]} has received Heartbeat Acknowledgement!",
                 )
-                self.LastHeartbeatAck = time.time()
+                self.last_heartbeat_ack = time.time()
                 self._log(20, f"Heartbeat latency is {self.heartbeat_latency}.")
                 return msg
             if msg.operation != 0:
@@ -146,7 +146,8 @@ class WS_Session(_Session):
                 return msg
 
             self._log(
-                20, f'Shard {self.identify.shard[0]} Gateway event - "{msg.type}"'
+                20,
+                f'Shard {self.identify.shard[0]} Gateway event - "{msg.type}"',
             )
             return msg
 
@@ -159,20 +160,20 @@ class WS_Session(_Session):
         if r.type is aiohttp.WSMsgType.ERROR:
             raise r.data
 
-    def _decode_payload(self, payload):
-        if type(payload) is bytes:
-            self._buffer.extend(payload)
+    def _decode_payload(self, payload) -> Optional[Event]:
+        if isinstance(payload, bytes):
+            self._buffer.extend(payload)  # type: ignore
             if len(payload) < 4 or payload[-4:] != b"\x00\x00\xff\xff":
-                return
+                return None
 
-            payload = self._inflator.decompress(self._buffer)
+            payload = self._inflator.decompress(self._buffer)  # type: ignore
             payload = payload.decompress("utf-8")
             self._buffer = bytearray()
 
         return gpj.loads(payload, Event())
 
-    async def _send_payload(self, op, data):
-        e = Event()
+    async def _send_payload(self, op, data):  # pylint: disable=invalid-name;
+        e = Event()  # pylint: disable=invalid-name
         e.operation = op
         e.raw_data = data
         raw_payload = gpj.dumps(e)
@@ -209,10 +210,12 @@ class WS_Session(_Session):
 
     async def _reconnect(self):
         try:
-            self._opened = self._loop.run_until_complete(self._open())
+            self._opened = self._loop.run_until_complete(  # pylint: disable=attribute-defined-outside-init
+                self._open()
+            )
         except ErrWSAlreadyOpen:
             self._log(
                 30,
                 f"Shard {self.identify.shard[0]} already open, no need to reconnect!",
             )
-            pass
+            return

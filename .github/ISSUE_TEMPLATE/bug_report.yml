@@ -1,0 +1,72 @@
+name: Bug Report
+description: Buuuuuug, oops looks like its now in my keyboard!
+title: 'Bug : '
+labels:
+  - Bug
+assignees:
+  - arHSM
+body:
+  - type: textarea
+    id: bug_desc
+    attributes:
+      label: Describe the bug
+      description: >-
+        An ultra-super-duper detailed info about the bug that flew in your
+        sector.
+      placeholder: It was white colored, it had long wings. Was probably flying at 69mph!
+    validations:
+      required: true
+  - type: textarea
+    id: bug_code
+    attributes:
+      label: Piece of code causing the bug
+      description: What was your code that caused the bug?
+      placeholder: OwO whuts this? print("NOOOO!" if bug else "YaY!")
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: bug_output
+    attributes:
+      label: Output Logs
+      description: The output in your terminal/console.
+      placeholder: Cats on top of each other!
+      render: shell
+  - type: textarea
+    id: bug_expected
+    attributes:
+      label: Expected Behaviour
+      description: What did you actually expect it to do?
+      placeholder: print "I <3 DiscPyth"
+    validations:
+      required: true
+  - type: textarea
+    id: bug_result
+    attributes:
+      label: Current Behaviour
+      description: What is it supposed to do?
+      placeholder: prints "I </3 DiscPyth"
+    validations:
+      required: true
+  - type: input
+    id: dpth_ver
+    attributes:
+      label: Your DiscPyth Version
+      description: Enter the current DiscPyth version you are using.
+      placeholder: 0.1.0
+    validations:
+      required: true
+  - type: checkboxes
+    id: bug_ack
+    attributes:
+      label: By submitting this report you agree to the following
+      description: You must agree to the following before submitting this Bug Report.
+      options:
+        - label: >-
+            By contributing, you agree that your contributions will be licensed
+            under its MIT License.
+          required: true
+        - label: Contribution Guidelines
+          required: true
+        - label: Comes Under - "Wanted Contributions"
+          required: true

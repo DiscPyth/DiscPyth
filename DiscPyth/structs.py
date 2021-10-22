@@ -1,7 +1,7 @@
 from enum import IntEnum
-from typing import Any, List, Tuple
+from typing import List
 
-from .ext import gopyjson as gpj
+import gopyjson.struct as gpj  # type: ignore
 
 
 class ActivityType(IntEnum):
@@ -111,7 +111,7 @@ class Intents(IntEnum):
     NONE: int = 0
 
 
-class Ready(metaclass=gpj.Struct):
+class Ready(metaclass=gpj.Struct):  # pylint: disable=too-few-public-methods;
     """
     Received after Identifying, contains information such as the gateway version used by DiscPyth and much more
     https://discord.com/developers/docs/topics/gateway#ready
@@ -127,7 +127,7 @@ class Ready(metaclass=gpj.Struct):
     application: dict = gpj.field("application")
 
 
-class Event(metaclass=gpj.Struct):
+class Event(metaclass=gpj.Struct):  # pylint: disable=too-few-public-methods;
     """A class to hold payloads with the data as a raw string
     ```json
     {
@@ -145,7 +145,7 @@ class Event(metaclass=gpj.Struct):
     raw_data: str = gpj.field("d", raw_json=True)
 
 
-class Hello(metaclass=gpj.Struct):
+class Hello(metaclass=gpj.Struct):  # pylint: disable=too-few-public-methods;
     """
     A class to hold the data for the HELLO Payload recieved from Discord,
     https://discord.com/developers/docs/topics/gateway#hello
@@ -155,18 +155,20 @@ class Hello(metaclass=gpj.Struct):
     trace: str = gpj.field("_trace")
 
 
-class IdentifyProperties(metaclass=gpj.Struct):
+class IdentifyProperties(
+    metaclass=gpj.Struct
+):  # pylint: disable=too-few-public-methods;
     """
     Properties Object of the Identify payload,
     https://discord.com/developers/docs/topics/gateway#identify-identify-connection-properties
     """
 
-    os: str = gpj.field("$os")
+    operating_sys: str = gpj.field("$os")
     browser: str = gpj.field("$browser")
     device: str = gpj.field("$device")
 
 
-class Identify(metaclass=gpj.Struct):
+class Identify(metaclass=gpj.Struct):  # pylint: disable=too-few-public-methods;
     """
     Identify Payload, sent after establishing a connection with Discord and receiving the HELLO Payload,
     Used to Identify the Bot Account with the gateway and start receiving events for the bot.
