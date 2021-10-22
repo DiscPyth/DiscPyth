@@ -20,7 +20,7 @@ e_require = {
 
 setup(
     name="discpyth",
-    version="0.1.0+planning-stage",  # semver
+    version="0.1.0b1",  # semver
     description="DiscPyth is an unofficial wrapper in python for the official Discord API.",
     long_description=long_description,
     long_description_content_type="text/markdown",
