@@ -21,24 +21,7 @@ Its basically [discordgo](https://github.com/bwmarrin/discordgo/) but in python 
 
 ### Demo
 
-```py
-import discpyth
-
-# Create a new session
-dp = discpyth.Session.new("YOUR_TOKEN_HERE")
-# Set intents
-dp.set_intents((discpyth.Intents.GUILDS | discpyth.Intents.GUILD_MESSAGES))
-
-
-try:
-    # Open the connection to Discord
-    dp.open()
-except KeyboardInterrupt:
-    # Close the connection
-    dp.close()
-    # Stop the loop
-    dp.stop()
-```
+REFACTORING IN PROGRESS
 
 ### Support
 
