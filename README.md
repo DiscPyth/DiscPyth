@@ -1,6 +1,8 @@
-# DiscPyth 
-<img src="./docs/assets/DiscPyth.png" alt="DiscPyth"
-	title="Logo of DiscPyth" width="100px" height="100px"/>
+<p align="center">
+	<img src="./docs/assets/DiscPyth.png" alt="DiscPyth" title="Logo of DiscPyth" width="20%"/>
+</p>
+
+# DiscPyth
 	
 [![Discord](https://img.shields.io/discord/886481241656922122?label=Support%20Server&logo=discord&style=flat-square&color=5865f2&labelColor=36393f)](https://discord.gg/8RATdNBs6n)
 [![GitHub Latest Commit](https://img.shields.io/github/last-commit/DiscPyth/DiscPyth?label=Latest%20Commit&logo=github&style=flat-square)](https://github.com/DiscPyth/DiscPyth)
