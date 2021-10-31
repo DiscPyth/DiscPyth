@@ -37,7 +37,7 @@ setup(
     ],
     packages=find_packages(where="DiscPyth"),
     python_requires=">=3.8",
-    install_requires=["aiohttp", "gopyjson"],
+    install_requires=["aiohttp", "go_json"],
     extras_require=e_require,
     project_urls={
         "Source": "https://github.com/DiscPyth/DiscPyth/",
