@@ -16,13 +16,11 @@
 
 DiscPyth is a wrapper built with Python for the Discord API, it is based on the very awesome Discord API wrapper for golang by **[@bwmarrin](https://github.com/bwmarrin)** called **[discordgo](https://github.com/bwmarrin/discordgo)** it is both simple and easy to use. The fact that DiscPyth is just a discordgo clone in Python makes DiscPyth also simple and easy to use.
 
+#### Documentation : `WIP`
+
 ### Demo
 
 REFACTORING IN PROGRESS
-
-### Support
-
-Documentation : `WIP`
 
 ### Contibuting
 
