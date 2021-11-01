@@ -1,5 +1,5 @@
 <p align="center">
-	<img src="./docs/assets/DiscPyth.png" alt="DiscPyth" title="Logo of DiscPyth" width="200px"/>
+	<img src="https://raw.githubusercontent.com/DiscPyth/.github/master/assets/DiscPyth.png" alt="DiscPyth" title="Logo of DiscPyth" width="200px"/>
 </p>
 
 # DiscPyth
