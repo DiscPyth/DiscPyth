@@ -4,23 +4,18 @@
 It is mainly inspired from `discordgo` (https://github.com/bwmarrin/discordgo) which is another wonderful wrapper for the Discord API in GO.
 
 ```py
-from DiscPyth import Session, Intents
-# Create a new session
-dp = Session.new("YOUR_TOKEN_HERE")
-# Set intents
-dp.Identify.Intents = 513
-# OR
-dp.set_intents(513)
-# OR (Recommended)
-dp.set_intents((Intents.GUILDS | Intents.GUILD_MESSAGES))
+import discpyth
+
+# Create a new Session
+ses = discpyth.Session.new("YOUR_VERY_RANDOM_TOKEN")
+# Set intents to use
+ses.set_intents(513)
 try:
-	# Open the connection to Discord
-	dp.open()
+    # Open the connection to discord
+    ses.open()
 except KeyboardInterrupt:
-	# Close the connection
-	dp.close()
-	# Stop the loop
-	dp.stop()
+    # Close the connection to discord
+    ses.close()
 ```
 
 ---------------------------------
@@ -88,6 +83,8 @@ class _Session:
         "_log",
         "_trim_logs",
         "_heartbeat",
+        "_open_task",
+        "_ws_lock"
     )
 
     def __init__(self):
@@ -136,9 +133,13 @@ class _Session:
 
         # Tasks
         self._heartbeat: asyncio.Future = None
+        self._open_task: asyncio.Future = None
+
+        # Locks
+        self._ws_lock: asyncio.Lock = None
 
 
-from .disc_pyth import Session  # pylint: disable=wrong-import-position # noqa: E402
+from .discpyth import Session  # pylint: disable=wrong-import-position # noqa: E402
 from .structs import *  # pylint: disable=wrong-import-position # noqa: E402, F401, F403
 
 __all__ = ("Session",)

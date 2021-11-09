@@ -15,10 +15,17 @@ class Session(WsSession, _Session):
         WsSession.__init__(self)
         _Session.__init__(self)
 
-    def open(self):
-        self._loop.run_until_complete(self._open())
+    def open(self) -> None:
+        self._log(
+            20,
+            f"Woosh, received open command!\nOpening shard {self.identify.shard[0]}...",
+        )
+        async def _wrapped_open():
+            await self._open()
+        self._open_task = self._loop.create_task(_wrapped_open())
+        self._loop.run_until_complete(self._open_task)
 
-    def set_intents(self, intents):
+    def set_intents(self, intents) -> None:
         if isinstance(intents, (Intents, int)):
             self._log(20, f"Setting intents - {intents}...")
             self.identify.intents = intents
@@ -28,7 +35,7 @@ class Session(WsSession, _Session):
                 f"Invalid type of intents, expected {Intents} or {int} instead got {type(intents)}!\nUsing 0 as intents",
             )
 
-    def close(self):
+    def close(self) -> None:
         self._log(
             20,
             f"Woosh, received close command!\nClean closing shard {self.identify.shard[0]}...",
@@ -45,7 +52,7 @@ class Session(WsSession, _Session):
         self._loop.stop()
 
     @classmethod
-    def new(  # pylint: disable=too-many-arguments;
+    def new(  # pylint: disable=too-many-arguments, too-many-branches;
         cls,
         token: str,
         shard_id: int = 0,
@@ -61,8 +68,22 @@ class Session(WsSession, _Session):
         s_instance._loop = asyncio.get_event_loop()
 
         if log:
-            if level not in (10, 20, 30, 40, 50):
-                level = 30
+            if isinstance(level, str):
+                if level == "debug":
+                    level = 10
+                elif level == "info":
+                    level = 20
+                elif level in ("warning", "warn"):
+                    level = 30
+                elif level == "error":
+                    level = 40
+                elif level == "critical":
+                    level = 50
+                else:
+                    level = 30
+            if isinstance(level, int):
+                if level not in (10, 20, 30, 40, 50):
+                    level = 30
             if log_name != "":
                 log_name = "_" + log_name
             logger = logging.getLogger(f"DiscPyth{log_name}")
@@ -85,7 +106,7 @@ class Session(WsSession, _Session):
             s_instance._trim_logs = False
         s_instance.identify = Identify()
         properties = IdentifyProperties()
-        properties.operating_sys = sys.platform
+        properties.os = sys.platform
         properties.browser = "DiscPyth"
         properties.device = "DiscPyth"
         s_instance.identify.token = token.strip()
@@ -93,5 +114,7 @@ class Session(WsSession, _Session):
         s_instance.identify.compress = False
         s_instance.identify.large_threshold = 250
         s_instance.identify.shard = [shard_id, shard_count]
+
+        s_instance._ws_lock = asyncio.Lock()
 
         return s_instance

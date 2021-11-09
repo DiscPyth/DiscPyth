@@ -3,34 +3,15 @@ import time
 from typing import Optional
 
 import aiohttp
-import gopyjson as gpj  # type: ignore
+import go_json as gj # type: ignore
 
 from . import _Session
 from .structs import Event, Hello
+from .utils import new_error
 
 __all__ = ("WsSession",)
 
 ZLIB_SUFFIX = b"\x00\x00\xff\xff"
-
-# Monkey Patched exception creator 😋
-def new_error(name: str, output=None) -> Exception:
-    # Class Cell so super() doesnt throw an error,
-    # could have just done Exception.__init__
-    # but whatever 🙄
-    # https://stackoverflow.com/questions/43778914/python3-using-super-in-eq-methods-raises-runtimeerror-super-class/43779009#43779009
-    __class__ = Exception  # pylint: disable=unused-variable # noqa: F841
-
-    def replacedinit(self):  # pylint: disable=unused-argument;
-        super().__init__(output)
-
-    # Quick way to create a class
-    err = type(str(name), (Exception,), {})
-    if output is not None:
-        # Replace __init__ if output is defined,
-        # better than new_error("Error")("Output")
-        # instead new_error("Error", "Output")
-        setattr(err, "__init__", replacedinit)
-    return err  # type: ignore
 
 
 ErrWSAlreadyOpen = new_error("ErrWSAlreadyOpen", "WebSocket already open!")
@@ -40,15 +21,21 @@ ErrWSClosed = new_error("ErrWSClosed", "WebSocket is closed!")
 # Dynamic errors
 ErrWS = new_error("ErrWS")
 
+class Resume(gj.Struct):
+    token = gj.field("token")
+    session_id = gj.field("session_id")
+    sequence = gj.field("seq")
+
 
 class WsSession(_Session):  # pylint: disable=too-many-instance-attributes;
-    async def _open(self):
+    async def _open(self) -> None:
         if self.client is None:
 
             self.client = aiohttp.ClientSession()
         if self._ws_conn is not None:
             raise ErrWSAlreadyOpen
         if self._gateway == "":
+            # TODO: Implement a way to get the gateway from the API
             self._gateway = "wss://gateway.discord.gg/?v=9&encoding=json"
         self._ws_conn = await self.client.ws_connect(self._gateway)
         e = await self._on_event()  # pylint: disable=invalid-name
@@ -63,13 +50,18 @@ class WsSession(_Session):  # pylint: disable=too-many-instance-attributes;
             f"Shard {self.identify.shard[0]} has received Hello Payload!",
         )
 
-        h = gpj.loads(e.raw_data, Hello())  # pylint: disable=invalid-name
+        h = gj.loads(e.raw_data, Hello)  # pylint: disable=invalid-name
         self.last_heartbeat_ack = time.time()
 
         if self._session_id == "" and self._sequence is None:
             await self._send_payload(2, self.identify)
-        # else:
-        # await self._send_payload(6, self._resume)
+        else:
+            resm = Resume(
+                token=self._token,
+                session_id=self._session_id,
+                seq=self._sequence,
+            )
+            await self._send_payload(6, resm)
 
         e = await self._on_event()  # pylint: disable=invalid-name
 
@@ -93,10 +85,10 @@ class WsSession(_Session):  # pylint: disable=too-many-instance-attributes;
             except ErrWSClosed:
                 break
 
-    async def _on_event(self):
+    async def _on_event(self) -> Event:
         r = await self._ws_conn.receive()  # pylint: disable=invalid-name
         if r.type in (aiohttp.WSMsgType.BINARY, aiohttp.WSMsgType.TEXT):
-            msg = gpj.loads(r.data, Event())
+            msg = gj.loads(r.data, Event)
             self._log(
                 10,
                 f"Operation : {msg.operation}, Sequence : {msg.sequence}, Type : {msg.type}, Data : {msg.raw_data if msg.raw_data == 'null' or len(msg.raw_data) <= 20 else (msg.raw_data if not self._trim_logs else msg.raw_data[:10]+'...(Showing first and last 10 chars)...'+msg.raw_data[-10:]) }",
@@ -121,7 +113,12 @@ class WsSession(_Session):  # pylint: disable=too-many-instance-attributes;
                         20,
                         f"Session for Shard {self.identify.shard[0]} has been invalidated, but is resumeable, resuming....",
                     )
-                    # await self._send_payload(6, self._resume)
+                    resm = Resume(
+                        token=self._token,
+                        session_id=self._session_id,
+                        seq=self._sequence,
+                    )
+                    await self._send_payload(6, resm)
                 else:
                     self._log(
                         20,
@@ -170,16 +167,16 @@ class WsSession(_Session):  # pylint: disable=too-many-instance-attributes;
             payload = payload.decompress("utf-8")
             self._buffer = bytearray()
 
-        return gpj.loads(payload, Event())
+        return gj.loads(payload, Event)
 
-    async def _send_payload(self, op, data):  # pylint: disable=invalid-name;
+    async def _send_payload(self, op, data) -> None:  # pylint: disable=invalid-name;
         e = Event()  # pylint: disable=invalid-name
         e.operation = op
         e.raw_data = data
-        raw_payload = gpj.dumps(e)
+        raw_payload = gj.dumps(e)
         await self._ws_conn.send_str(raw_payload)
 
-    async def _t_heartbeat(self, delay):
+    async def _t_heartbeat(self, delay) -> None:
         while True:
             last = self.last_heartbeat_ack
             self.last_heartbeat_sent = time.time()
@@ -194,13 +191,16 @@ class WsSession(_Session):  # pylint: disable=too-many-instance-attributes;
             await asyncio.sleep(delay)
 
     @property
-    def heartbeat_latency(self):
+    def heartbeat_latency(self) -> float:
         return self.last_heartbeat_ack - self.last_heartbeat_sent
 
-    async def _close_w_code(self, code=None):
+    async def _close_w_code(self, code=None) -> None:
 
         if self._heartbeat is not None:
             self._heartbeat.cancel()
+
+        if self._open_task is not None:
+            self._open_task.cancel()
 
         if self._ws_conn is not None:
             if code is not None:
@@ -208,11 +208,12 @@ class WsSession(_Session):  # pylint: disable=too-many-instance-attributes;
             else:
                 await self._ws_conn.close()
 
-    async def _reconnect(self):
+    async def _reconnect(self) -> None:
+        async def _wrapped_open():
+            await self._open()
         try:
-            self._opened = self._loop.run_until_complete(  # pylint: disable=attribute-defined-outside-init
-                self._open()
-            )
+            self._open_task = self._loop.create_task(_wrapped_open())
+            await self._open_task
         except ErrWSAlreadyOpen:
             self._log(
                 30,
