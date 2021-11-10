@@ -4,6 +4,26 @@ from typing import List, Literal
 import go_json as gj  # type: ignore
 
 
+class User(gj.Struct):
+    id : str = gj.field("id")
+    username : str = gj.field("username")
+    discriminator : str = gj.field("discriminator")
+    avatar : str = gj.field("avatar")
+    bot : bool = gj.field("bot", optional=True)
+    system : bool = gj.field("system", optional=True)
+    mfa_enabled : bool = gj.field("mfa_enabled", optional=True)
+    banner : str = gj.field("banner", optional=True)
+    accent_color : int = gj.field("accent_color", optional=True)
+    locale : str = gj.field("locale", optional=True)
+    verified : bool = gj.field("verified", optional=True)
+    email : str = gj.field("email", optional=True)
+    flags : int = gj.field("flags", optional=True)
+    premium_type : int = gj.field("premium_type", optional=True)
+    public_flags : int = gj.field("public_flags", optional=True)
+    @property
+    def tag(self):
+        return self.username+"#"+self.discriminator
+
 class UpdateStatusData(gj.Struct):
     since: int = gj.field("since")
     activities: list = gj.field("activities")
@@ -19,28 +39,23 @@ class Event(gj.Struct):
     raw_data: str = gj.field("d", raw_json=True)
 
 
-class Hello(gj.Struct):
-    heartbeat_interval: int = gj.field("heartbeat_interval")
-    trace: str = gj.field("_trace", raw_json=True)
-
-
 class Intents(IntEnum):
     # fmt: off
-    GUILDS                          =   (1 << 0)
-    GUILD_MEMBERS                   =   (1 << 1)
-    GUILD_BANS                      =   (1 << 2)
-    GUILD_EMOJIS_AND_STICKERS       =   (1 << 3)
-    GUILD_INTEGRATIONS              =   (1 << 4)
-    GUILD_WEBHOOKS                  =   (1 << 5)
-    GUILD_INVITES                   =   (1 << 6)
-    GUILD_VOICE_STATES              =   (1 << 7)
-    GUILD_PRESENCES                 =   (1 << 8)
-    GUILD_MESSAGES                  =   (1 << 9)
-    GUILD_MESSAGE_REACTIONS         =   (1 << 10)
-    GUILD_MESSAGE_TYPING            =   (1 << 11)
-    DIRECT_MESSAGES                 =   (1 << 12)
-    DIRECT_MESSAGE_REACTIONS        =   (1 << 13)
-    DIRECT_MESSAGE_TYPING           =   (1 << 14)
+    GUILDS                          =   (1 << 0) # noqa: E221, E222
+    GUILD_MEMBERS                   =   (1 << 1) # noqa: E221, E222
+    GUILD_BANS                      =   (1 << 2) # noqa: E221, E222
+    GUILD_EMOJIS_AND_STICKERS       =   (1 << 3) # noqa: E221, E222
+    GUILD_INTEGRATIONS              =   (1 << 4) # noqa: E221, E222
+    GUILD_WEBHOOKS                  =   (1 << 5) # noqa: E221, E222
+    GUILD_INVITES                   =   (1 << 6) # noqa: E221, E222
+    GUILD_VOICE_STATES              =   (1 << 7) # noqa: E221, E222
+    GUILD_PRESENCES                 =   (1 << 8) # noqa: E221, E222
+    GUILD_MESSAGES                  =   (1 << 9) # noqa: E221, E222
+    GUILD_MESSAGE_REACTIONS         =   (1 << 10) # noqa: E221, E222
+    GUILD_MESSAGE_TYPING            =   (1 << 11) # noqa: E221, E222
+    DIRECT_MESSAGES                 =   (1 << 12) # noqa: E221, E222
+    DIRECT_MESSAGE_REACTIONS        =   (1 << 13) # noqa: E221, E222
+    DIRECT_MESSAGE_TYPING           =   (1 << 14) # noqa: E221, E222
     # fmt: on
 
 
@@ -63,58 +78,220 @@ class Identify(gj.Struct):
     presence = gj.field("presence", optional=True)
     intents: int = gj.field("intents")
 
-"""
-Hello
-Ready
-Resumed
-Reconnect
-Invalid Session
-Channel Create
-Channel Update
-Channel Delete
-Channel Pins Update
-Thread Create
-Thread Update
-Thread Delete
-Thread List Sync
-Thread Member Update
-Thread Members Update
-Guild Create
-Guild Update
-Guild Delete
-Guild Ban Add
-Guild Ban Remove
-Guild Emojis Update
-Guild Stickers Update
-Guild Integrations Update
-Guild Member Add
-Guild Member Remove
-Guild Member Update
-Guild Members Chunk
-Guild Role Create
-Guild Role Update
-Guild Role Delete
-Integration Create
-Integration Update
-Integration Delete
-Interaction Create
-Invite Create
-Invite Delete
-Message Create
-Message Update
-Message Delete
-Message Delete Bulk
-Message Reaction Add
-Message Reaction Remove
-Message Reaction Remove All
-Message Reaction Remove Emoji
-Presence Update
-Stage Instance Create
-Stage Instance Delete
-Stage Instance Update
-Typing Start
-User Update
-Voice State Update
-Voice Server Update
-Webhooks Update
-"""
+
+class Hello(gj.Struct):
+    heartbeat_interval: int = gj.field("heartbeat_interval")
+    trace: str = gj.field("_trace", raw_json=True)
+
+
+class Ready(gj.Struct):
+    version = gj.field("v")
+    user: User = gj.field("user", json_object=User)
+    guilds = gj.field("guilds")
+    session_id = gj.field("session_id")
+    shard = gj.field("shard")
+    application = gj.field("application")
+
+
+class Resumed(gj.Struct):
+    pass
+
+
+class Reconnect(gj.Struct):
+    pass
+
+
+class InvalidSession(gj.Struct):
+    pass
+
+
+class ChannelCreate(gj.Struct):
+    pass
+
+
+class ChannelDelete(gj.Struct):
+    pass
+
+
+class ChannelPinsUpdate(gj.Struct):
+    pass
+
+
+class ChannelUpdate(gj.Struct):
+    pass
+
+
+class ThreadCreate(gj.Struct):
+    pass
+
+
+class ThreadDelete(gj.Struct):
+    pass
+
+
+class ThreadListSync(gj.Struct):
+    pass
+
+
+class ThreadMembersUpdate(gj.Struct):
+    pass
+
+
+class ThreadMemberUpdate(gj.Struct):
+    pass
+
+
+class ThreadUpdate(gj.Struct):
+    pass
+
+
+class GuildCreate(gj.Struct):
+    pass
+
+
+class GuildDelete(gj.Struct):
+    pass
+
+
+class GuildUpdate(gj.Struct):
+    pass
+
+
+class GuildBanAdd(gj.Struct):
+    pass
+
+
+class GuildBanRemove(gj.Struct):
+    pass
+
+
+class GuildEmojisUpdate(gj.Struct):
+    pass
+
+
+class GuildStickersUpdate(gj.Struct):
+    pass
+
+
+class GuildIntegrationsUpdate(gj.Struct):
+    pass
+
+
+class GuildMemberAdd(gj.Struct):
+    pass
+
+
+class GuildMemberRemove(gj.Struct):
+    pass
+
+
+class GuildMemberUpdate(gj.Struct):
+    pass
+
+
+class GuildMembersChunk(gj.Struct):
+    pass
+
+
+class GuildRoleCreate(gj.Struct):
+    pass
+
+
+class GuildRoleDelete(gj.Struct):
+    pass
+
+
+class GuildRoleUpdate(gj.Struct):
+    pass
+
+
+class IntegrationCreate(gj.Struct):
+    pass
+
+
+class IntegrationDelete(gj.Struct):
+    pass
+
+
+class IntegrationUpdate(gj.Struct):
+    pass
+
+
+class InteractionCreate(gj.Struct):
+    pass
+
+
+class InviteCreate(gj.Struct):
+    pass
+
+
+class InviteDelete(gj.Struct):
+    pass
+
+
+class MessageCreate(gj.Struct):
+    pass
+
+
+class MessageDelete(gj.Struct):
+    pass
+
+
+class MessageUpdate(gj.Struct):
+    pass
+
+
+class MessageDeleteBulk(gj.Struct):
+    pass
+
+
+class MessageReactionAdd(gj.Struct):
+    pass
+
+
+class MessageReactionRemove(gj.Struct):
+    pass
+
+
+class MessageReactionRemoveAll(gj.Struct):
+    pass
+
+
+class MessageReactionRemoveEmoji(gj.Struct):
+    pass
+
+
+class PresenceUpdate(gj.Struct):
+    pass
+
+
+class StageInstanceCreate(gj.Struct):
+    pass
+
+
+class StageInstanceDelete(gj.Struct):
+    pass
+
+
+class StageInstanceUpdate(gj.Struct):
+    pass
+
+
+class TypingStart(gj.Struct):
+    pass
+
+
+class UserUpdate(gj.Struct):
+    pass
+
+
+class VoiceServerUpdate(gj.Struct):
+    pass
+
+
+class VoiceStateUpdate(gj.Struct):
+    pass
+
+
+class WebhooksUpdate(gj.Struct):
+    pass

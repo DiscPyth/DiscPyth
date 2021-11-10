@@ -24,15 +24,24 @@ DiscPyth is a wrapper built with Python for the Discord API, it is based on the 
 ```py
 import discpyth
 
-# Create a new Session
-ses = discpyth.Session.new("YOUR_VERY_RANDOM_TOKEN")
-# Set intents to use
+# create a new session
+ses = discpyth.Session.new("YOUR_TOKEN_HERE")
+# Set your required intents
 ses.set_intents(513)
+
+# Create an Event callback
+@ses.add_handler(discpyth.Ready)
+# You can also use typehints
+# @ses.add_handler
+# async def bot_is_online(s, r: discpyth.Ready):
+async def bot_is_online(s, r):
+    print(f"{r.user.tag} is now online!")
+
 try:
-    # Open the connection to discord
+    # Open the connection to Discord
     ses.open()
 except KeyboardInterrupt:
-    # Close the connection to discord
+    # Close the connection to Discord
     ses.close()
 ```
 

@@ -6,46 +6,51 @@ import sys
 from typing import Literal
 
 from . import _Session  # pylint: disable=cyclic-import
+from .event import Event
+from .eventhandlers import EventHandler
 from .structs import Identify, IdentifyProperties, Intents
 from .wsapi import WsSession  # pylint: disable=cyclic-import
 
 
-class Session(WsSession, _Session):
+class Session(Event, WsSession, _Session):
     def __init__(self):
+        Event.__init__(self)
         WsSession.__init__(self)
         _Session.__init__(self)
 
     def open(self) -> None:
-        self._log(
+        self._log(  # type: ignore
             20,
-            f"Woosh, received open command!\nOpening shard {self.identify.shard[0]}...",
+            f"Woosh, received open command!\nOpening shard {self.identify.shard[0]}...",  # pylint: disable=unsubscriptable-object
         )
+
         async def _wrapped_open():
             await self._open()
+
         self._open_task = self._loop.create_task(_wrapped_open())
         self._loop.run_until_complete(self._open_task)
 
     def set_intents(self, intents) -> None:
         if isinstance(intents, (Intents, int)):
-            self._log(20, f"Setting intents - {intents}...")
+            self._log(20, f"Setting intents - {intents}...")  # type: ignore
             self.identify.intents = intents
         else:
-            self._log(
+            self._log(  # type: ignore
                 30,
                 f"Invalid type of intents, expected {Intents} or {int} instead got {type(intents)}!\nUsing 0 as intents",
             )
 
     def close(self) -> None:
-        self._log(
+        self._log(  # type: ignore
             20,
-            f"Woosh, received close command!\nClean closing shard {self.identify.shard[0]}...",
+            f"Woosh, received close command!\nClean closing shard {self.identify.shard[0]}...",  # pylint: disable=unsubscriptable-object
         )
 
         self._loop.run_until_complete(self._close_w_code())
 
         # We can only rely on this to know if we
         # have multiple ws connections or not
-        if self.identify.shard[1] == 1:
+        if self.identify.shard[1] == 1:  # pylint: disable=unsubscriptable-object
             self._loop.run_until_complete(self.client.close())
 
     def stop(self):
@@ -104,17 +109,18 @@ class Session(WsSession, _Session):
             s_instance._log = logger.log
         if not trim_logs:
             s_instance._trim_logs = False
-        s_instance.identify = Identify()
-        properties = IdentifyProperties()
-        properties.os = sys.platform
-        properties.browser = "DiscPyth"
-        properties.device = "DiscPyth"
-        s_instance.identify.token = token.strip()
-        s_instance.identify.properties = properties
-        s_instance.identify.compress = False
-        s_instance.identify.large_threshold = 250
-        s_instance.identify.shard = [shard_id, shard_count]
+        s_instance.identify = Identify(
+            token=token.strip(),
+            properties=IdentifyProperties(
+                **{"$os": sys.platform, "$browser": "DiscPyth", "$device": "DiscPyth"}
+            ),
+            compress=False,
+            large_threshold=250,
+            shard=[shard_id, shard_count],
+        )
 
         s_instance._ws_lock = asyncio.Lock()
+        s_instance._handlers = EventHandler()
+        s_instance._once_handlers = EventHandler()
 
         return s_instance

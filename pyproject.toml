@@ -1,3 +1,39 @@
+[project]
+name = "discpyth"
+version = "0.1.0"
+description = "DiscPyth is an unofficial wrapper in python for the official Discord API."
+authors = [
+    "arHSM <hanseungmin.ar@gmail.com>"
+]
+license = "MIT"
+readme = "README.md"
+python = "^3.6"
+homepage = "https://github.com/DiscPyth/DiscPyth"
+repository = "https://github.com/DiscPyth/DiscPyth"
+#documentation = "https://github.com/DiscPyth/DiscPyth"
+
+
+keywords = ["discord", "discord-api", "discord-bot", "REST", "websocket"]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Build Tools",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+]
+
+# Requirements
+[dependencies]
+go-json = "^0.2.2"
+
+[dev-dependencies]
+black = "*"
+pylint = "*"
+flake8 = "*"
+mypy = "*"
+
 [tool.isort]
 profile = 'black'
 

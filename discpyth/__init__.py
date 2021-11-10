@@ -6,15 +6,24 @@ It is mainly inspired from `discordgo` (https://github.com/bwmarrin/discordgo) w
 ```py
 import discpyth
 
-# Create a new Session
-ses = discpyth.Session.new("YOUR_VERY_RANDOM_TOKEN")
-# Set intents to use
+# create a new session
+ses = discpyth.Session.new("YOUR_TOKEN_HERE")
+# Set your required intents
 ses.set_intents(513)
+
+# Create an Event callback
+@ses.add_handler(discpyth.Ready)
+# You can also use typehints
+# @ses.add_handler
+# async def bot_is_online(s, r: discpyth.Ready):
+async def bot_is_online(s, r):
+    print(f"{r.user.tag} is now online!")
+
 try:
-    # Open the connection to discord
+    # Open the connection to Discord
     ses.open()
 except KeyboardInterrupt:
-    # Close the connection to discord
+    # Close the connection to Discord
     ses.close()
 ```
 
@@ -56,6 +65,7 @@ if TYPE_CHECKING:
 
     import aiohttp
 
+    from .eventhandlers import EventHandler
     from .structs import Identify
 
 
@@ -72,6 +82,7 @@ class _Session:
         "last_heartbeat_sent",
         "_handlers",
         "_once_handlers",
+        "_sync_events",
         "_event_types",
         "_register_event_providers",
         "_ws_conn",
@@ -84,7 +95,7 @@ class _Session:
         "_trim_logs",
         "_heartbeat",
         "_open_task",
-        "_ws_lock"
+        "_ws_lock",
     )
 
     def __init__(self):
@@ -108,8 +119,9 @@ class _Session:
         self.last_heartbeat_sent: float = 0.0
 
         # Event handlers
-        self._handlers: dict = None
-        self._once_handlers: dict = None
+        self._handlers: EventHandler = None
+        self._once_handlers: EventHandler = None
+        self._sync_events: bool = False
 
         # The websocket connection.
         self._ws_conn: aiohttp.ClientWebSocketResponse = None
