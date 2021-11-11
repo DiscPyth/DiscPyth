@@ -370,7 +370,7 @@ class EventHandler:  # pylint: disable=too-many-instance-attributes;
         data = gj.loads(data, self._EVENTS.get(event, None))
         event = getattr(self, event.lower(), set())
         for callback in event:
-            if session._sync_events:  # pylint: disable=protected-access
+            if session.sync_events:  # pylint: disable=protected-access
                 await callback(session, data)
             else:
                 session._loop.create_task(  # pylint: disable=protected-access

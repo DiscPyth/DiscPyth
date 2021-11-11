@@ -5,7 +5,8 @@ import aiohttp
 import go_json as gj  # type: ignore
 
 from . import _Session  # pylint: disable=cyclic-import
-from .structs import Activity, Event, Hello
+from .helpers import new_update_status_data
+from .structs import ActivityTypes, Event, Hello
 from .utils import new_error
 
 __all__ = ("WsSession",)
@@ -213,16 +214,28 @@ class WsSession(_Session):  # pylint: disable=too-many-instance-attributes;
     def heartbeat_latency(self) -> float:
         return self.last_heartbeat_ack - self.last_heartbeat_sent  # type: ignore
 
-    def new_update_status_data(  # pylint: disable=too-many-arguments,no-self-use;
-        self, status: str, idle: int, activity_type, name: str, url: str
-    ):
-        if status not in ("online", "dnd", "idle", "invisible"):
-            status = "online"
-        if name != "":
-            act = [Activity(name=name, type=activity_type, url=url)]
-        return UpdateStatusData(sinc=idle, status=status, afk=False, activities=act)
+    async def update_game_status(self, idle: int, name: str) -> None:
+        return await self.update_status_complex(
+            new_update_status_data("online", idle, ActivityTypes.GAME, name, "")
+        )
 
-    async def update_status_comple(self, usd):
+    async def update_streaming_status(self, idle: int, name: str, url: str) -> None:
+        return await self.update_status_complex(
+            new_update_status_data(
+                "online",
+                idle,
+                ActivityTypes.GAME if url in ("", None) else ActivityTypes.STREAMING,
+                name,
+                url,
+            )
+        )
+
+    async def update_listening_status(self, name: str, url: str) -> None:
+        return await self.update_status_complex(
+            new_update_status_data("online", 0, ActivityTypes.LISTENING, name, url)
+        )
+
+    async def update_status_complex(self, usd):
         await self._send_payload(3, usd)
 
     async def _close_w_code(self, code=None) -> None:

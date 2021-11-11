@@ -63,8 +63,8 @@ class UpdateStatusData(gj.Struct):
 class Event(gj.Struct):
     __partial = True  # pylint: disable=unused-private-member
     operation: int = gj.field("op")
-    sequence: int = gj.field("seq")
-    type: str = gj.field("t")
+    sequence: int = gj.field("s", optional=True)
+    type: str = gj.field("t", optional=True)
     raw_data: str = gj.field("d", raw_json=True)
 
 

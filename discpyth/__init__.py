@@ -82,7 +82,7 @@ class _Session:
         "last_heartbeat_sent",
         "_handlers",
         "_once_handlers",
-        "_sync_events",
+        "sync_events",
         "_event_types",
         "_register_event_providers",
         "_ws_conn",
@@ -121,7 +121,7 @@ class _Session:
         # Event handlers
         self._handlers: EventHandler = None
         self._once_handlers: EventHandler = None
-        self._sync_events: bool = False
+        self.sync_events: bool = False
 
         # The websocket connection.
         self._ws_conn: aiohttp.ClientWebSocketResponse = None
@@ -152,6 +152,7 @@ class _Session:
 
 
 from .discpyth import Session  # pylint: disable=wrong-import-position # noqa: E402
+from .helpers import *  # pylint: disable=wrong-import-position # noqa: E402, F401, F403
 from .structs import *  # pylint: disable=wrong-import-position # noqa: E402, F401, F403
 
 __all__ = ("Session",)
