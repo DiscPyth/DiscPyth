@@ -5,24 +5,26 @@ import go_json as gj  # type: ignore
 
 
 class User(gj.Struct):
-    id : str = gj.field("id")
-    username : str = gj.field("username")
-    discriminator : str = gj.field("discriminator")
-    avatar : str = gj.field("avatar")
-    bot : bool = gj.field("bot", optional=True)
-    system : bool = gj.field("system", optional=True)
-    mfa_enabled : bool = gj.field("mfa_enabled", optional=True)
-    banner : str = gj.field("banner", optional=True)
-    accent_color : int = gj.field("accent_color", optional=True)
-    locale : str = gj.field("locale", optional=True)
-    verified : bool = gj.field("verified", optional=True)
-    email : str = gj.field("email", optional=True)
-    flags : int = gj.field("flags", optional=True)
-    premium_type : int = gj.field("premium_type", optional=True)
-    public_flags : int = gj.field("public_flags", optional=True)
+    id: str = gj.field("id")
+    username: str = gj.field("username")
+    discriminator: str = gj.field("discriminator")
+    avatar: str = gj.field("avatar")
+    bot: bool = gj.field("bot", optional=True)
+    system: bool = gj.field("system", optional=True)
+    mfa_enabled: bool = gj.field("mfa_enabled", optional=True)
+    banner: str = gj.field("banner", optional=True)
+    accent_color: int = gj.field("accent_color", optional=True)
+    locale: str = gj.field("locale", optional=True)
+    verified: bool = gj.field("verified", optional=True)
+    email: str = gj.field("email", optional=True)
+    flags: int = gj.field("flags", optional=True)
+    premium_type: int = gj.field("premium_type", optional=True)
+    public_flags: int = gj.field("public_flags", optional=True)
+
     @property
     def tag(self):
-        return self.username+"#"+self.discriminator
+        return self.username + "#" + self.discriminator
+
 
 class UpdateStatusData(gj.Struct):
     since: int = gj.field("since")

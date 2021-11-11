@@ -12,7 +12,9 @@ from .structs import Identify, IdentifyProperties, Intents
 from .wsapi import WsSession  # pylint: disable=cyclic-import
 
 
-class Session(Event, WsSession, _Session):
+class Session(
+    Event, WsSession, _Session
+):  # pylint: disable=too-many-instance-attributes;
     def __init__(self):
         Event.__init__(self)
         WsSession.__init__(self)

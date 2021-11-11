@@ -17,7 +17,7 @@ ZLIB_SUFFIX = b"\x00\x00\xff\xff"
 ErrWSAlreadyOpen: Exception = new_error("ErrWSAlreadyOpen", "WebSocket already open!")
 ErrWSNotFound: Exception = new_error("ErrWSNotFound", "WebSocket not yet opened!")
 # For handling the while loop
-ErrWSClosed: Exception = new_error("ErrWSClosed", "WebSocket is closed!")
+ErrWSClosed: Exception = new_error("ErrWSClosed")
 # Dynamic errors
 ErrWS: Exception = new_error("ErrWS")
 
@@ -149,7 +149,7 @@ class WsSession(_Session):  # pylint: disable=too-many-instance-attributes;
                 20,
                 f'Shard {self.identify.shard[0]} Gateway event - "{msg.type}"',
             )
-            await self._handle(msg.type, msg.raw_data)
+            await self._handle(msg.type, msg.raw_data)  # pylint: disable=no-member
             return msg
 
         if r.type in (
@@ -157,7 +157,7 @@ class WsSession(_Session):  # pylint: disable=too-many-instance-attributes;
             aiohttp.WSMsgType.CLOSING,
             aiohttp.WSMsgType.CLOSE,
         ):
-            raise ErrWSClosed
+            raise ErrWSClosed(f"{r.data}{' - '+r.extra if r.extra != '' else ''}")
         if r.type is aiohttp.WSMsgType.ERROR:
             raise r.data
 
@@ -217,6 +217,11 @@ class WsSession(_Session):  # pylint: disable=too-many-instance-attributes;
                 await self._ws_conn.close(code=code)
             else:
                 await self._ws_conn.close()
+            self._ws_conn = None
+
+        if self.client is not None:
+            await self.client.close()
+            self.client = None
 
     async def _reconnect(self) -> None:
         async def _wrapped_open():

@@ -370,10 +370,12 @@ class EventHandler:  # pylint: disable=too-many-instance-attributes;
         data = gj.loads(data, self._EVENTS.get(event, None))
         event = getattr(self, event.lower(), set())
         for callback in event:
-            if session._sync_events:
+            if session._sync_events:  # pylint: disable=protected-access
                 await callback(session, data)
             else:
-                session._loop.create_task(callback(session, data))
+                session._loop.create_task(  # pylint: disable=protected-access
+                    callback(session, data)
+                )
 
     def _add_event_callback(  # pylint: disable=too-many-return-statements,too-many-branches,too-many-statements;
         self,
@@ -714,4 +716,7 @@ class EventHandler:  # pylint: disable=too-many-instance-attributes;
                 f"{func.__name__} has been added to 'WEBHOOKS_UPDATE' event callbacks.",
             )
 
-        return 30, "Something is not right 😕\nMake sure you passed in the right Event or didn't mess up somewhere..."
+        return (
+            30,
+            "Something is not right 😕\nMake sure you passed in the right Event or didn't mess up somewhere...",
+        )
