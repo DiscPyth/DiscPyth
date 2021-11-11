@@ -3,7 +3,7 @@ from __future__ import annotations
 import inspect
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, Set, Tuple
 
-import go_json as gj
+import go_json as gj  # type: ignore
 
 # fmt: off
 from .structs import ( # isort: skip

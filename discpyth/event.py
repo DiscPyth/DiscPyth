@@ -1,6 +1,6 @@
 import inspect
 
-from go_json import is_struct_class
+from go_json import is_struct_class  # type: ignore
 
 from . import _Session
 

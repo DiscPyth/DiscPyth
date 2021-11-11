@@ -149,7 +149,7 @@ class WsSession(_Session):  # pylint: disable=too-many-instance-attributes;
                 20,
                 f'Shard {self.identify.shard[0]} Gateway event - "{msg.type}"',
             )
-            await self._handle(msg.type, msg.raw_data)  # pylint: disable=no-member
+            await self._handle(msg.type, msg.raw_data)  # type: ignore # pylint: disable=no-member
             return msg
 
         if r.type in (
@@ -157,7 +157,7 @@ class WsSession(_Session):  # pylint: disable=too-many-instance-attributes;
             aiohttp.WSMsgType.CLOSING,
             aiohttp.WSMsgType.CLOSE,
         ):
-            raise ErrWSClosed(f"{r.data}{' - '+r.extra if r.extra != '' else ''}")
+            raise ErrWSClosed(f"{r.data}{' - '+r.extra if r.extra != '' else ''}")  # type: ignore
         if r.type is aiohttp.WSMsgType.ERROR:
             raise r.data
 
@@ -217,11 +217,7 @@ class WsSession(_Session):  # pylint: disable=too-many-instance-attributes;
                 await self._ws_conn.close(code=code)
             else:
                 await self._ws_conn.close()
-            self._ws_conn = None
-
-        if self.client is not None:
-            await self.client.close()
-            self.client = None
+            self._ws_conn = None  # type: ignore
 
     async def _reconnect(self) -> None:
         async def _wrapped_open():

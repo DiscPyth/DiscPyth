@@ -5,11 +5,11 @@ import logging
 import sys
 from typing import Literal
 
-from . import _Session  # pylint: disable=cyclic-import
+from . import _Session
 from .event import Event
 from .eventhandlers import EventHandler
 from .structs import Identify, IdentifyProperties, Intents
-from .wsapi import WsSession  # pylint: disable=cyclic-import
+from .wsapi import WsSession
 
 
 class Session(
