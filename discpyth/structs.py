@@ -26,6 +26,33 @@ class User(gj.Struct):
         return self.username + "#" + self.discriminator
 
 
+class ActivityTypes(IntEnum):
+    GAME = 0
+    STREAMING = 1
+    LISTENING = 2
+    WATCHING = 3
+    CUSTOM = 4
+    COMPETING = 5
+
+
+class Activity(gj.Struct):
+    name: str = gj.field("name")
+    type: int = gj.field("type")
+    url: str = gj.field("url", optional=True)
+    created_at: int = gj.field("created_at")
+    timestamps = gj.field("timestamps", optional=True)
+    application_id: str = gj.field("application_id", optional=True)
+    details: str = gj.field("details", optional=True)
+    state: str = gj.field("state", optional=True)
+    emoji = gj.field("emoji", optional=True)
+    party = gj.field("party", optional=True)
+    assets = gj.field("assets", optional=True)
+    secrets = gj.field("secrets", optional=True)
+    instance: bool = gj.field("instance", optional=True)
+    flags: int = gj.field("flags", optional=True)
+    buttons = gj.field("buttons", optional=True)
+
+
 class UpdateStatusData(gj.Struct):
     since: int = gj.field("since")
     activities: list = gj.field("activities")

@@ -83,7 +83,7 @@ from .structs import ( # isort: skip
 # fmt: on
 
 if TYPE_CHECKING:
-    from .discpyth import _Session
+    from .discpyth import Session
 
 
 class EventHandler:  # pylint: disable=too-many-instance-attributes;
@@ -197,176 +197,176 @@ class EventHandler:  # pylint: disable=too-many-instance-attributes;
     }
 
     def __init__(self):  # pylint: disable=too-many-statements;
-        self.ready: Set[Callable[[_Session, Ready], Awaitable[None]]] = set()
-        self.resumed: Set[Callable[[_Session, Resumed], Awaitable[None]]] = set()
-        self.reconnect: Set[Callable[[_Session, Reconnect], Awaitable[None]]] = set()
+        self.ready: Set[Callable[[Session, Ready], Awaitable[None]]] = set()
+        self.resumed: Set[Callable[[Session, Resumed], Awaitable[None]]] = set()
+        self.reconnect: Set[Callable[[Session, Reconnect], Awaitable[None]]] = set()
         self.invalid_session: Set[
-            Callable[[_Session, InvalidSession], Awaitable[None]]
+            Callable[[Session, InvalidSession], Awaitable[None]]
         ] = set()
 
         self.channel_create: Set[
-            Callable[[_Session, ChannelCreate], Awaitable[None]]
+            Callable[[Session, ChannelCreate], Awaitable[None]]
         ] = set()
         self.channel_delete: Set[
-            Callable[[_Session, ChannelDelete], Awaitable[None]]
+            Callable[[Session, ChannelDelete], Awaitable[None]]
         ] = set()
         self.channel_pins_update: Set[
-            Callable[[_Session, ChannelPinsUpdate], Awaitable[None]]
+            Callable[[Session, ChannelPinsUpdate], Awaitable[None]]
         ] = set()
         self.channel_update: Set[
-            Callable[[_Session, ChannelUpdate], Awaitable[None]]
+            Callable[[Session, ChannelUpdate], Awaitable[None]]
         ] = set()
 
         self.thread_create: Set[
-            Callable[[_Session, ThreadCreate], Awaitable[None]]
+            Callable[[Session, ThreadCreate], Awaitable[None]]
         ] = set()
         self.thread_delete: Set[
-            Callable[[_Session, ThreadDelete], Awaitable[None]]
+            Callable[[Session, ThreadDelete], Awaitable[None]]
         ] = set()
         self.thread_list_sync: Set[
-            Callable[[_Session, ThreadListSync], Awaitable[None]]
+            Callable[[Session, ThreadListSync], Awaitable[None]]
         ] = set()
         self.thread_members_update: Set[
-            Callable[[_Session, ThreadMembersUpdate], Awaitable[None]]
+            Callable[[Session, ThreadMembersUpdate], Awaitable[None]]
         ] = set()
         self.thread_member_update: Set[
-            Callable[[_Session, ThreadMemberUpdate], Awaitable[None]]
+            Callable[[Session, ThreadMemberUpdate], Awaitable[None]]
         ] = set()
         self.thread_update: Set[
-            Callable[[_Session, ThreadUpdate], Awaitable[None]]
+            Callable[[Session, ThreadUpdate], Awaitable[None]]
         ] = set()
 
         self.guild_create: Set[
-            Callable[[_Session, GuildCreate], Awaitable[None]]
+            Callable[[Session, GuildCreate], Awaitable[None]]
         ] = set()
         self.guild_delete: Set[
-            Callable[[_Session, GuildDelete], Awaitable[None]]
+            Callable[[Session, GuildDelete], Awaitable[None]]
         ] = set()
         self.guild_update: Set[
-            Callable[[_Session, GuildUpdate], Awaitable[None]]
+            Callable[[Session, GuildUpdate], Awaitable[None]]
         ] = set()
 
         self.guild_ban_add: Set[
-            Callable[[_Session, GuildBanAdd], Awaitable[None]]
+            Callable[[Session, GuildBanAdd], Awaitable[None]]
         ] = set()
         self.guild_ban_remove: Set[
-            Callable[[_Session, GuildBanRemove], Awaitable[None]]
+            Callable[[Session, GuildBanRemove], Awaitable[None]]
         ] = set()
 
         self.guild_emojis_update: Set[
-            Callable[[_Session, GuildEmojisUpdate], Awaitable[None]]
+            Callable[[Session, GuildEmojisUpdate], Awaitable[None]]
         ] = set()
         self.guild_stickers_update: Set[
-            Callable[[_Session, GuildStickersUpdate], Awaitable[None]]
+            Callable[[Session, GuildStickersUpdate], Awaitable[None]]
         ] = set()
 
         self.guild_integrations_update: Set[
-            Callable[[_Session, GuildIntegrationsUpdate], Awaitable[None]]
+            Callable[[Session, GuildIntegrationsUpdate], Awaitable[None]]
         ] = set()
 
         self.guild_member_add: Set[
-            Callable[[_Session, GuildMemberAdd], Awaitable[None]]
+            Callable[[Session, GuildMemberAdd], Awaitable[None]]
         ] = set()
         self.guild_member_remove: Set[
-            Callable[[_Session, GuildMemberRemove], Awaitable[None]]
+            Callable[[Session, GuildMemberRemove], Awaitable[None]]
         ] = set()
         self.guild_member_update: Set[
-            Callable[[_Session, GuildMemberUpdate], Awaitable[None]]
+            Callable[[Session, GuildMemberUpdate], Awaitable[None]]
         ] = set()
 
         self.guild_members_chunk: Set[
-            Callable[[_Session, GuildMembersChunk], Awaitable[None]]
+            Callable[[Session, GuildMembersChunk], Awaitable[None]]
         ] = set()
 
         self.guild_role_create: Set[
-            Callable[[_Session, GuildRoleCreate], Awaitable[None]]
+            Callable[[Session, GuildRoleCreate], Awaitable[None]]
         ] = set()
         self.guild_role_delete: Set[
-            Callable[[_Session, GuildRoleDelete], Awaitable[None]]
+            Callable[[Session, GuildRoleDelete], Awaitable[None]]
         ] = set()
         self.guild_role_update: Set[
-            Callable[[_Session, GuildRoleUpdate], Awaitable[None]]
+            Callable[[Session, GuildRoleUpdate], Awaitable[None]]
         ] = set()
 
         self.integration_create: Set[
-            Callable[[_Session, IntegrationCreate], Awaitable[None]]
+            Callable[[Session, IntegrationCreate], Awaitable[None]]
         ] = set()
         self.integration_delete: Set[
-            Callable[[_Session, IntegrationDelete], Awaitable[None]]
+            Callable[[Session, IntegrationDelete], Awaitable[None]]
         ] = set()
         self.integration_update: Set[
-            Callable[[_Session, IntegrationUpdate], Awaitable[None]]
+            Callable[[Session, IntegrationUpdate], Awaitable[None]]
         ] = set()
 
         self.interaction_create: Set[
-            Callable[[_Session, InteractionCreate], Awaitable[None]]
+            Callable[[Session, InteractionCreate], Awaitable[None]]
         ] = set()
 
         self.invite_create: Set[
-            Callable[[_Session, InviteCreate], Awaitable[None]]
+            Callable[[Session, InviteCreate], Awaitable[None]]
         ] = set()
         self.invite_delete: Set[
-            Callable[[_Session, InviteDelete], Awaitable[None]]
+            Callable[[Session, InviteDelete], Awaitable[None]]
         ] = set()
 
         self.message_create: Set[
-            Callable[[_Session, MessageCreate], Awaitable[None]]
+            Callable[[Session, MessageCreate], Awaitable[None]]
         ] = set()
         self.message_delete: Set[
-            Callable[[_Session, MessageDelete], Awaitable[None]]
+            Callable[[Session, MessageDelete], Awaitable[None]]
         ] = set()
         self.message_update: Set[
-            Callable[[_Session, MessageUpdate], Awaitable[None]]
+            Callable[[Session, MessageUpdate], Awaitable[None]]
         ] = set()
 
         self.message_delete_bulk: Set[
-            Callable[[_Session, MessageDeleteBulk], Awaitable[None]]
+            Callable[[Session, MessageDeleteBulk], Awaitable[None]]
         ] = set()
         self.message_reaction_add: Set[
-            Callable[[_Session, MessageReactionAdd], Awaitable[None]]
+            Callable[[Session, MessageReactionAdd], Awaitable[None]]
         ] = set()
         self.message_reaction_remove: Set[
-            Callable[[_Session, MessageReactionRemove], Awaitable[None]]
+            Callable[[Session, MessageReactionRemove], Awaitable[None]]
         ] = set()
         self.message_reaction_remove_all: Set[
-            Callable[[_Session, MessageReactionRemoveAll], Awaitable[None]]
+            Callable[[Session, MessageReactionRemoveAll], Awaitable[None]]
         ] = set()
         self.message_reaction_remove_emoji: Set[
-            Callable[[_Session, MessageReactionRemoveEmoji], Awaitable[None]]
+            Callable[[Session, MessageReactionRemoveEmoji], Awaitable[None]]
         ] = set()
 
         self.presence_update: Set[
-            Callable[[_Session, PresenceUpdate], Awaitable[None]]
+            Callable[[Session, PresenceUpdate], Awaitable[None]]
         ] = set()
 
         self.stage_instance_create: Set[
-            Callable[[_Session, StageInstanceCreate], Awaitable[None]]
+            Callable[[Session, StageInstanceCreate], Awaitable[None]]
         ] = set()
         self.stage_instance_delete: Set[
-            Callable[[_Session, StageInstanceDelete], Awaitable[None]]
+            Callable[[Session, StageInstanceDelete], Awaitable[None]]
         ] = set()
         self.stage_instance_update: Set[
-            Callable[[_Session, StageInstanceUpdate], Awaitable[None]]
+            Callable[[Session, StageInstanceUpdate], Awaitable[None]]
         ] = set()
 
         self.typing_start: Set[
-            Callable[[_Session, TypingStart], Awaitable[None]]
+            Callable[[Session, TypingStart], Awaitable[None]]
         ] = set()
 
-        self.user_update: Set[Callable[[_Session, UserUpdate], Awaitable[None]]] = set()
+        self.user_update: Set[Callable[[Session, UserUpdate], Awaitable[None]]] = set()
 
         self.voice_server_update: Set[
-            Callable[[_Session, VoiceServerUpdate], Awaitable[None]]
+            Callable[[Session, VoiceServerUpdate], Awaitable[None]]
         ] = set()
         self.voice_state_update: Set[
-            Callable[[_Session, VoiceStateUpdate], Awaitable[None]]
+            Callable[[Session, VoiceStateUpdate], Awaitable[None]]
         ] = set()
 
         self.webhooks_update: Set[
-            Callable[[_Session, WebhooksUpdate], Awaitable[None]]
+            Callable[[Session, WebhooksUpdate], Awaitable[None]]
         ] = set()
 
-    async def _handle_event(self, session: _Session, event, data) -> None:
+    async def _handle_event(self, session: Session, event, data) -> None:
         data = gj.loads(data, self._EVENTS.get(event, None))
         event = getattr(self, event.lower(), set())
         for callback in event:
@@ -379,7 +379,7 @@ class EventHandler:  # pylint: disable=too-many-instance-attributes;
 
     def _add_event_callback(  # pylint: disable=too-many-return-statements,too-many-branches,too-many-statements;
         self,
-        func: Callable[[_Session, Any], Awaitable[None]],
+        func: Callable[[Session, Any], Awaitable[None]],
         event=None,
     ) -> Optional[Tuple[int, str]]:
         if not inspect.iscoroutinefunction(func):
@@ -716,6 +716,7 @@ class EventHandler:  # pylint: disable=too-many-instance-attributes;
                 f"{func.__name__} has been added to 'WEBHOOKS_UPDATE' event callbacks.",
             )
 
+        # This happens when you are too lazy to do a proper check with 50+ events in your decorator
         return (
             30,
             "Something is not right 😕\nMake sure you passed in the right Event or didn't mess up somewhere...",

@@ -151,9 +151,7 @@ class _Session:
         self._ws_lock: asyncio.Lock = None
 
 
-from .discpyth import (  # pylint: disable=wrong-import-position,cyclic-import # noqa: E402
-    Session,
-)
+from .discpyth import Session  # pylint: disable=wrong-import-position # noqa: E402
 from .structs import *  # pylint: disable=wrong-import-position # noqa: E402, F401, F403
 
 __all__ = ("Session",)

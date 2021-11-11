@@ -1,12 +1,11 @@
 import asyncio
 import time
-from typing import Optional
 
 import aiohttp
 import go_json as gj  # type: ignore
 
-from . import _Session
-from .structs import Event, Hello
+from . import _Session  # pylint: disable=cyclic-import
+from .structs import Activity, Event, Hello
 from .utils import new_error
 
 __all__ = ("WsSession",)
@@ -28,6 +27,14 @@ class Resume(gj.Struct):
     sequence = gj.field("seq")
 
 
+class UpdateStatusData(gj.Struct):
+    __partial = True  # pylint: disable=unused-private-member
+    idle_since: int = gj.field("since")
+    activities: list = gj.field("activities")
+    afk: bool = gj.field("afk")
+    status: str = gj.field("status")
+
+
 class WsSession(_Session):  # pylint: disable=too-many-instance-attributes;
     async def _open(self) -> None:
         if self.client is None:
@@ -37,7 +44,9 @@ class WsSession(_Session):  # pylint: disable=too-many-instance-attributes;
             raise ErrWSAlreadyOpen
         if self._gateway == "":
             # TODO: Implement a way to get the gateway from the API # pylint: disable=fixme
-            self._gateway: str = "wss://gateway.discord.gg/?v=9&encoding=json"
+            self._gateway: str = (
+                "wss://gateway.discord.gg/?v=9&encoding=json&compress=zlib-stream"
+            )
         self._ws_conn: aiohttp.ClientWebSocketResponse = await self.client.ws_connect(
             self._gateway
         )
@@ -85,13 +94,16 @@ class WsSession(_Session):  # pylint: disable=too-many-instance-attributes;
         while True:
             try:
                 await self._on_event()
-            except ErrWSClosed:  # type: ignore
-                break
+            except ErrWSClosed as wsc:  # type: ignore
+                if wsc.msg != "":  # pylint: disable=no-else-raise,no-member
+                    raise
+                else:
+                    break
 
-    async def _on_event(self) -> Optional[Event]:
+    async def _on_event(self) -> Event:
         r = await self._ws_conn.receive()  # pylint: disable=invalid-name
         if r.type in (aiohttp.WSMsgType.BINARY, aiohttp.WSMsgType.TEXT):
-            msg = gj.loads(r.data, Event)
+            msg = self._decode_payload(r.data)
             self._log(  # type: ignore
                 10,
                 f"Operation : {msg.operation}, Sequence : {msg.sequence}, Type : {msg.type}, Data : {msg.raw_data if msg.raw_data == 'null' or len(msg.raw_data) <= 20 else (msg.raw_data if not self._trim_logs else msg.raw_data[:10]+'...(Showing first and last 10 chars)...'+msg.raw_data[-10:]) }",
@@ -161,16 +173,16 @@ class WsSession(_Session):  # pylint: disable=too-many-instance-attributes;
         if r.type is aiohttp.WSMsgType.ERROR:
             raise r.data
 
-        return None
+        return None  # type: ignore
 
-    def _decode_payload(self, payload) -> Optional[Event]:
+    def _decode_payload(self, payload) -> Event:
         if isinstance(payload, bytes):
             self._buffer.extend(payload)  # type: ignore
             if len(payload) < 4 or payload[-4:] != b"\x00\x00\xff\xff":
-                return None
+                return None  # type: ignore
 
             payload = self._inflator.decompress(self._buffer)  # type: ignore
-            payload = payload.decompress("utf-8")
+            payload = payload.decode("utf-8")
             self._buffer = bytearray()
 
         return gj.loads(payload, Event)
@@ -190,7 +202,7 @@ class WsSession(_Session):  # pylint: disable=too-many-instance-attributes;
             await self._send_payload(1, self._sequence)
             if (time.time() - last) > (delay * 5):
                 self._log(  # type: ignore
-                    40,
+                    30,
                     f"Haven't received a Heartbeat Acknowledgement in {time.time()-last}, reconnecting...",
                 )
                 await self._close_w_code()
@@ -201,8 +213,17 @@ class WsSession(_Session):  # pylint: disable=too-many-instance-attributes;
     def heartbeat_latency(self) -> float:
         return self.last_heartbeat_ack - self.last_heartbeat_sent  # type: ignore
 
+    def new_update_status_data(  # pylint: disable=too-many-arguments,no-self-use;
+        self, status: str, idle: int, activity_type, name: str, url: str
+    ):
+        if status not in ("online", "dnd", "idle", "invisible"):
+            status = "online"
+        if name != "":
+            act = [Activity(name=name, type=activity_type, url=url)]
+        return UpdateStatusData(sinc=idle, status=status, afk=False, activities=act)
+
     async def update_status_comple(self, usd):
-        pass
+        await self._send_payload(3, usd)
 
     async def _close_w_code(self, code=None) -> None:
 

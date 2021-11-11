@@ -2,7 +2,7 @@ import inspect
 
 from go_json import is_struct_class  # type: ignore
 
-from . import _Session
+from . import _Session  # pylint: disable=cyclic-import
 
 
 class Event(_Session):
