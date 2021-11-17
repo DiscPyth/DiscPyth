@@ -2,25 +2,26 @@ import pathlib
 
 from setuptools import find_packages, setup
 
+from .discpyth import __version__
+
 here = pathlib.Path(__file__).parent.resolve()
 
 long_description = (here / "README.md").read_text(encoding="utf-8")
 
 e_require = {
     "dev": [
-        "Sphinx==4.2.0",
-        "pycodestyle==2.8.0",
-        "pylint==2.11.1",
-        "black==21.9b0",
-        "flake8==4.0.1",
-        "isort==5.9.3",
-        "mypy==0.910",
+        "Sphinx",   
+        "pylint",
+        "black",
+        "flake8",
+        "isort",
+        "mypy",
     ]
 }
 
 setup(
     name="discpyth",
-    version="0.1.0b1",  # semver
+    version=__version__,  # semver
     description="DiscPyth is an unofficial wrapper in python for the official Discord API.",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -35,7 +36,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
     ],
-    packages=find_packages(where="DiscPyth"),
+    packages=find_packages(where="discpyth"),
     python_requires=">=3.8",
     install_requires=["aiohttp", "go_json"],
     extras_require=e_require,

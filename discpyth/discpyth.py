@@ -1,128 +1,92 @@
-from __future__ import annotations
-
+from typing import Dict, Union
 import asyncio
-import logging
-import sys
-from typing import Literal
+from contextlib import contextmanager
 
-from . import _Session  # pylint: disable=cyclic-import
-from .event import Event
-from .eventhandlers import EventHandler
-from .structs import Identify, IdentifyProperties, Intents
-from .wsapi import WsSession
+from .base_classes import BaseSession
+from .restapi import RESTSession
+
+class Session(RESTSession, BaseSession):
+    def __init__(self, **options):
+        BaseSession.__init__(self, **options)
+        RESTSession.__init__(self)
+
+    
+    @contextmanager
+    def get_loop(self):
+        loop: asyncio.AbstractEventLoop = asyncio.events._get_running_loop()
+        try:
+            if loop is not None:
+                yield loop
+            else:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                yield loop
+        finally:
+            try:
+                asyncio.runners._cancel_all_tasks(loop)
+                loop.run_until_complete(loop.shutdown_asyncgens())
+                loop.run_until_complete(loop.shutdown_default_executor())
+            finally:
+                asyncio.set_event_loop(None)
+                loop.close()
+
+    def open(self):
+        async def wrapped_open():
+            self._loop = asyncio.get_running_loop()
+            try:
+                await self.get_gateway_bot()
+                await asyncio.sleep(15)
+            except KeyboardInterrupt:
+                self.close()
+
+        asyncio.run(wrapped_open())
+
+    def close(self):
+        if self._client is not None:
+            self._loop.run_until_complete(self._client.close())
 
 
-class Session(
-    Event, WsSession, _Session
-):  # pylint: disable=too-many-instance-attributes;
-    def __init__(self):
-        Event.__init__(self)
-        WsSession.__init__(self)
-        _Session.__init__(self)
+def new(token, intents, shard_id=0, shard_count=1, **options) -> Session:
+    shard_count = int(shard_count)
+    intents = int(intents)
+    token = str(token)
 
-    def open(self) -> None:
-        self._log(  # type: ignore
-            20,
-            f"Woosh, received open command!\nOpening shard {self.identify.shard[0]}...",  # pylint: disable=unsubscriptable-object
+    if isinstance(shard_id, (list, int)):
+        if isinstance(shard_id, list):
+            if len(shard_id) != 2:
+                raise IndexError(
+                    (
+                        "To launch multiple shards the format"
+                        " should be '[start, end]'. Expected length of 2, got"
+                        f" {len(shard_id)}"
+                    )
+                )
+            if shard_id[1] > shard_count:
+                raise ValueError(
+                    "End of Shards to launch is more than Shard ID"
+                )
+        if isinstance(shard_id, int) and shard_id > shard_count:
+            raise ValueError("End of Shards to launch is more than Shard ID")
+
+    log_options: Dict[str, Union[int, str, bool]] = {}
+    if options.get("log", False):
+        log_options.update(
+            log=True,
+            name=str(options.get("name", "DiscPyth")),
+            level=int(options.get("level", 30)),
+            to_file=bool(options.get("to_file", False)),
         )
 
-        async def _wrapped_open():
-            await self._open()
-
-        self._open_task = self._loop.create_task(_wrapped_open())
-        self._loop.run_until_complete(self._open_task)
-
-    def set_intents(self, intents) -> None:
-        if isinstance(intents, (Intents, int)):
-            self._log(20, f"Setting intents - {intents}...")  # type: ignore
-            self.identify.intents = intents
-        else:
-            self._log(  # type: ignore
-                30,
-                f"Invalid type of intents, expected {Intents} or {int} instead got {type(intents)}!\nUsing 0 as intents",
-            )
-
-    def close(self) -> None:
-        self._log(  # type: ignore
-            20,
-            f"Woosh, received close command!\nClean closing shard {self.identify.shard[0]}...",  # pylint: disable=unsubscriptable-object
-        )
-
-        self._loop.run_until_complete(self._close_w_code())
-
-        # We can only rely on this to know if we
-        # have multiple ws connections or not
-        if self.identify.shard[1] == 1:  # pylint: disable=unsubscriptable-object
-            self._loop.run_until_complete(self.client.close())
-
-    def stop(self):
-        self._loop.stop()
-
-    @classmethod
-    def new(  # pylint: disable=too-many-arguments, too-many-branches;
-        cls,
-        token: str,
-        shard_id: int = 0,
-        shard_count: int = 1,
-        log: bool = False,
-        level: Literal[10, 20, 30, 40, 50] = 30,
-        to_file: bool = False,
-        log_name: str = "",
-        trim_logs: bool = True,
-    ) -> Session:
-        s_instance = cls()
-
-        s_instance._loop = asyncio.get_event_loop()
-
-        if log:
-            if isinstance(level, str):
-                if level == "debug":
-                    level = 10
-                elif level == "info":
-                    level = 20
-                elif level in ("warning", "warn"):
-                    level = 30
-                elif level == "error":
-                    level = 40
-                elif level == "critical":
-                    level = 50
-                else:
-                    level = 30
-            if isinstance(level, int):
-                if level not in (10, 20, 30, 40, 50):
-                    level = 30
-            if log_name != "":
-                log_name = "_" + log_name
-            logger = logging.getLogger(f"DiscPyth{log_name}")
-            logger.setLevel(10)
-            formatter = logging.Formatter(
-                "[%(name)s] | [%(asctime)s] | [%(levelname)s] : %(message)s"
-            )
-            stream_handler = logging.StreamHandler()
-            stream_handler.setLevel(level)
-            stream_handler.setFormatter(formatter)
-            logger.addHandler(stream_handler)
-            if to_file:
-                file_handler = logging.FileHandler(f"DiscPyth{log_name}")
-                file_handler.setLevel(level)
-                file_handler.setFormatter(formatter)
-                logger.addHandler(file_handler)
-
-            s_instance._log = logger.log
-        if not trim_logs:
-            s_instance._trim_logs = False
-        s_instance.identify = Identify(
-            token=token.strip(),
-            properties=IdentifyProperties(
-                **{"$os": sys.platform, "$browser": "DiscPyth", "$device": "DiscPyth"}
-            ),
-            compress=False,
-            large_threshold=250,
-            shard=[shard_id, shard_count],
-        )
-
-        s_instance._ws_lock = asyncio.Lock()
-        s_instance._handlers = EventHandler()
-        s_instance._once_handlers = EventHandler()
-
-        return s_instance
+    cls = Session(
+        token=token,
+        intents=intents,
+        shard_count=shard_count,
+        shard_id=shard_id,
+        rest_retries=int(options.get("rest_retries", 3)),
+        # If a user passes in the wrong thing then the program will
+        # crash, hence don't mess with loops unless you know what you
+        # are doing.
+        loop=options.get("loop", None),
+        **log_options,
+    )
+    return cls

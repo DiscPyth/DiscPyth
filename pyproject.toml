@@ -34,6 +34,9 @@ pylint = "*"
 flake8 = "*"
 mypy = "*"
 
+[tool.black]
+line-length = 79
+
 [tool.isort]
 profile = 'black'
 
@@ -41,7 +44,7 @@ profile = 'black'
 disable = "C0330, C0326, C0301, R0903, W1203, C0116, C0115, C0114"
 
 [tool.pylint.format]
-max-line-length = "88"
+max-line-length = "79"
 
 [build-system]
 requires = [
