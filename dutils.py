@@ -18,13 +18,13 @@ subparser = parser.add_subparsers(dest="command")
 check = subparser.add_parser("check")
 check.add_argument(
     "-s",
-    help="Specify checks to be skipped, 'i' for isort, 'b' for black, 'p' for pylint, 'f' for flake8 and 'm' for mypy. Separate by comma(,) ex '-s i, b, p, f'.",
+    help="Specify checks to be skipped, 'i' for isort, 'b' for black, 'p' for pylint, 'f' for flake8 and 'm' for mypy. Separate by comma(,) ex '-s i,b,p,f'.",
 )
 
 fmt = subparser.add_parser("fmt")
 fmt.add_argument(
     "-s",
-    help="Specify formatting tools to be skipped, 'i' for isort, 'b' for black. Separate by comma(,) ex '-s i, b'.",
+    help="Specify formatting tools to be skipped, 'i' for isort, 'b' for black. Separate by comma(,) ex '-s i,b'.",
 )
 
 args = parser.parse_args()
@@ -88,14 +88,24 @@ checkers = {
     "m": mp,
 }
 
+names = {
+    "i": "isort",
+    "b": "black",
+    "p": "pylint",
+    "f": "flake8",
+    "m": "mypy",
+}
+
 formatters = {"i": f_isrt, "b": f_blk}
 
 if args.command == "check":
     todo = ["i", "b", "p", "f", "m"]
+    skp = []
     if args.s:
         for t in args.s.split(","):
+            skp.append(names[t])
             todo.remove(t.strip())
-        print(f"Performing checks with following skipped,\n{args.s}")
+        print(f"Performing checks with following skipped,\n{', '.join(skp)}")
     else:
         print("Performing a full check.")
     for tool in todo:
@@ -103,7 +113,7 @@ if args.command == "check":
             checkers[tool]()
         except SystemExit as e:
             if e.code != 0:
-                print(f"An error occured while running {tool}.")
+                print(f"An error occured while running {names[tool]}.")
                 raise
             else:
                 pass

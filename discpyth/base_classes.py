@@ -5,50 +5,20 @@ module.
 """
 from __future__ import annotations
 
-import asyncio
-import zlib
-from typing import TYPE_CHECKING, Dict, List, Union
+__all__ = ("BaseSession",)
 
-from . import __author__, __version__
+from typing import TYPE_CHECKING, Any, List, Set, Union
+import zlib
+
+from . import __author__, __version__  # pylint: disable=cyclic-import
 from .utils import DummyLogging, Logging
 
 if TYPE_CHECKING:
     import aiohttp
 
-    from .discpyth import Session
-    from .wsapi import Shard
-
-
-class BaseShard:
-    __slots__ = {
-        # The WebSocket Connection
-        "_conn",
-        # The Session instance controlling the shard
-        "_ses",
-        # ByteArray for decompressing
-        "_buffer",
-        # zlib.decompressobj instance
-        "_inflator",
-        # Identify payload to send
-        "_identify",
-    }
-
-    def __init__(self, session: Session):
-
-        self._ses: Session = session
-
-        # bytearray object to pass into self._inflator.decompress()
-        self._buffer: bytearray = bytearray()
-
-        # zlib doesn't expose zlib.Decompress so no type hints
-        # (visible anger)
-        self._inflator = zlib.decompressobj()
-
 
 class BaseSession:  # pylint: disable=too-many-instance-attributes
-    __slots__ = {
-        # Event loop
-        "_loop",
+    __slots__: Set[str] = {
         # Rest retries on failure
         "max_rest_retries",
         # aiohttp ClientSession instance
@@ -79,15 +49,13 @@ class BaseSession:  # pylint: disable=too-many-instance-attributes
         # to shard 10 or if its an int like 0 then we will launch
         # shard 0
         "shard_id",
-        # A dictionary containing all the launched shards
         "_shards",
+        "_ws_conn",
+        "_buffer",
+        "_inflator"
     }
 
     def __init__(self, **options):
-        # The user may pass in their own loop, not really recommended
-        # `asyncio.get_event_loop()` is deprecated so not recommended to
-        # mess with loops
-        self._loop: asyncio.AbstractEventLoop = options.get("loop", None)
 
         self.max_rest_retries: int = options.get("rest_retries", 3)
         # ClientSession should be initialized in a coroutine
@@ -126,4 +94,7 @@ class BaseSession:  # pylint: disable=too-many-instance-attributes
         self.shard_count: int = options.get("shard_count", 1)
         self.shard_id: Union[List[int], int] = options.get("shard_id", 0)
 
-        self._shards: Dict[int, Shard] = {}
+        self._shards = None
+        self._ws_conn: Dict[int, aiohttp.ClientWebSocketResponse] = {}
+        self._buffer: Dict[int, bytearray] = {k: bytearray() for k in range(self.shard_count)}
+        self._inflator: Dict[int, Any] = {k: zlib.decompressobj() for k in range(self.shard_count)}

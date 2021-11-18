@@ -1,52 +1,67 @@
-from typing import Dict, Union
+from __future__ import annotations
+
+__all__ = ("Session", "new")
+
 import asyncio
-from contextlib import contextmanager
+from contextlib import asynccontextmanager
+from typing import Dict, Union
 
 from .base_classes import BaseSession
 from .restapi import RESTSession
+from .wsapi import Shard, ShardManager
 
-class Session(RESTSession, BaseSession):
+
+class Session(ShardManager, Shard, RESTSession, BaseSession):
     def __init__(self, **options):
         BaseSession.__init__(self, **options)
         RESTSession.__init__(self)
+        if self.shard_count == 1:
+            Shard.__init__(self)
+        elif self.shard_count > 1:
+            ShardManager.__init__(self)
 
-    
-    @contextmanager
-    def get_loop(self):
-        loop: asyncio.AbstractEventLoop = asyncio.events._get_running_loop()
+    @asynccontextmanager
+    async def _openmanager(self):
         try:
-            if loop is not None:
-                yield loop
-            else:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                yield loop
+            yield None
         finally:
-            try:
-                asyncio.runners._cancel_all_tasks(loop)
-                loop.run_until_complete(loop.shutdown_asyncgens())
-                loop.run_until_complete(loop.shutdown_default_executor())
-            finally:
-                asyncio.set_event_loop(None)
-                loop.close()
+            await self.close()
 
     def open(self):
         async def wrapped_open():
-            self._loop = asyncio.get_running_loop()
-            try:
-                await self.get_gateway_bot()
-                await asyncio.sleep(15)
-            except KeyboardInterrupt:
-                self.close()
+            async with self._openmanager():
+                await self._open_ws(self.shard_id)
 
-        asyncio.run(wrapped_open())
+        try:
+            asyncio.run(wrapped_open())
+        except KeyboardInterrupt:
+            pass
 
-    def close(self):
+    async def close(self):
+
         if self._client is not None:
-            self._loop.run_until_complete(self._client.close())
+            await self._client.close()
+            self._client = None  # type: ignore
+
+    def __getitem__(self, key: int) -> Union[Session, Shard]:
+        if not isinstance(key, int):
+            # TODO: Think about an appropriate message
+            raise TypeError("")
+
+        # TODO: Think of  out of range and under range shards
+        # error messasge
+        if key > (self.shard_count - 1):
+            raise IndexError("")
+        if key < 0:
+            raise IndexError("")
+
+        if self._shards is not None:
+            return self._shards[key]
+
+        return self
 
 
-def new(token, intents, shard_id=0, shard_count=1, **options) -> Session:
+def new(token, intents, /, *, shard_id=0, shard_count=1, **options) -> Session:
     shard_count = int(shard_count)
     intents = int(intents)
     token = str(token)
@@ -83,10 +98,6 @@ def new(token, intents, shard_id=0, shard_count=1, **options) -> Session:
         shard_count=shard_count,
         shard_id=shard_id,
         rest_retries=int(options.get("rest_retries", 3)),
-        # If a user passes in the wrong thing then the program will
-        # crash, hence don't mess with loops unless you know what you
-        # are doing.
-        loop=options.get("loop", None),
         **log_options,
     )
     return cls

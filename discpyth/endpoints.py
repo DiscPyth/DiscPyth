@@ -1,3 +1,6 @@
+__all__ = ("Endpoints",)
+
+
 class Endpoints:
     API_VERSION = "9"
 
