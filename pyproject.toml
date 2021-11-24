@@ -28,7 +28,8 @@ classifiers = [
 
 # Requirements
 [dependencies]
-go-json = "^0.3.0"
+aiohttp = "*"
+go-json = ">=0.3.7.post3"
 
 [dev-dependencies]
 black = "*"

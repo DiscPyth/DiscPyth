@@ -127,6 +127,8 @@ if args.command == "check":
                     pass
             else:
                 pass
+    if args.i:
+        sys.exit(1)
 if args.command == "fmt":
     todo = ["i", "b"]
     if args.s:
