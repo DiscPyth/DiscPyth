@@ -5,7 +5,7 @@ on:
   - pull_request
 
 jobs:
-  test:
+  CQChecks:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -18,4 +18,4 @@ jobs:
         python -m pip install --upgrade pip
         pip install black isort pylint flake8 mypy
     - name: Running tests
-      run: ./dutils.py check -i
+      run: python ./dutils.py check -i
