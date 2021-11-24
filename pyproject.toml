@@ -18,18 +18,21 @@ keywords = ["discord", "discord-api", "discord-bot", "REST", "websocket"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
-    "Topic :: Software Development :: Build Tools",
+    "Topic :: Communications :: Chat",
+    'Topic :: Internet',
+    'Topic :: Software Development :: Libraries',
+    'Topic :: Software Development :: Libraries :: Python Modules',
+    'Topic :: Utilities',
     "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
 ]
 
 # Requirements
 [dependencies]
-go-json = "^0.2.2"
+go-json = "^0.3.0"
 
 [dev-dependencies]
 black = "*"
+isort="*"
 pylint = "*"
 flake8 = "*"
 mypy = "*"
@@ -41,6 +44,15 @@ line-length = 79
 profile = 'black'
 
 [tool.pylint.messages_control]
+# C0330: Wrong hanging indentation before block (add 4 spaces)
+# C0326: Bad whitespace
+# C0301: Line too long
+# R0903: Too few public methods (n/2)
+# W1203: logging-fstring-interpolation
+# C0116: Missing function or method docstring
+# C0115: Missing class docstring
+# C0114: Missing module docstring
+# W0511: TODO warnings, (fix-me)
 disable = "C0330, C0326, C0301, R0903, W1203, C0116, C0115, C0114, W0511"
 
 [tool.pylint.format]

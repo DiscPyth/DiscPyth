@@ -5,11 +5,12 @@ __all__ = ("RESTSession",)
 import aiohttp
 import go_json  # type: ignore
 
+from .base_classes import BaseSession
 from .endpoints import Endpoints
 from .structs import GetGateway, GetGatewayBot
 
 
-class RESTSession:
+class RESTSession(BaseSession):
     # pylint: disable=no-member
 
     async def request(  # pylint: disable=dangerous-default-value

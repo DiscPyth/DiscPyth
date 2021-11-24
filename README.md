@@ -25,7 +25,7 @@ DiscPyth is a wrapper built with Python for the Discord API, it is based on the 
 import discpyth
 
 # create a new session
-ses = discpyth.Session.new("YOUR_TOKEN_HERE")
+ses = discpyth.Session.new("MTA1NjgxMzYxMzA2ODE2NTIy.MTUxNDI2ODAwLjA=.cPW6VQMVp8pdbfUm8FHHWR9+UCpYpIgyhytMpZj9xG8=")
 # Set your required intents
 ses.set_intents(513)
 

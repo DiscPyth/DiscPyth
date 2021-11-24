@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import os
 import sys
 
 import pylint.lint as pylnt
@@ -19,6 +20,11 @@ check = subparser.add_parser("check")
 check.add_argument(
     "-s",
     help="Specify checks to be skipped, 'i' for isort, 'b' for black, 'p' for pylint, 'f' for flake8 and 'm' for mypy. Separate by comma(,) ex '-s i,b,p,f'.",
+)
+check.add_argument(
+    "-i",
+    action="store_true",
+    help="If specified, tests will continue on error! (NOT RECOMMENDED)"
 )
 
 fmt = subparser.add_parser("fmt")
@@ -113,8 +119,12 @@ if args.command == "check":
             checkers[tool]()
         except SystemExit as e:
             if e.code != 0:
-                print(f"An error occured while running {names[tool]}.")
-                raise
+                if not args.i:
+                    print(f"An error occured while running {names[tool]}.")
+                    raise
+                else:
+                    print(f"An error occured while running {names[tool]}, ignoring...")
+                    pass
             else:
                 pass
 if args.command == "fmt":
