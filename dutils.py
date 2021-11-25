@@ -107,6 +107,7 @@ formatters = {"i": f_isrt, "b": f_blk}
 if args.command == "check":
     todo = ["i", "b", "p", "f", "m"]
     skp = []
+    err = 0
     if args.s:
         for t in args.s.split(","):
             skp.append(names[t])
@@ -124,11 +125,12 @@ if args.command == "check":
                     raise
                 else:
                     print(f"An error occured while running {names[tool]}, ignoring...")
+                    err = e.code
                     pass
             else:
                 pass
-    if args.i:
-        sys.exit(1)
+    if args.i and err > 0:
+        sys.exit(err)
 if args.command == "fmt":
     todo = ["i", "b"]
     if args.s:
