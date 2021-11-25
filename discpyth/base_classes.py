@@ -1,6 +1,6 @@
 """
-This file contains the BaseSession class and the BaseShard class,
-both are important base classes and are used multiple times across the
+This file contains the BaseSession class,
+which is a important base classe and is used multiple times across the
 module.
 """
 from __future__ import annotations
@@ -14,6 +14,7 @@ from . import __author__, __url__, __version__  # pylint: disable=cyclic-import
 if TYPE_CHECKING:
     import aiohttp
 
+    from .eventhandlers import EventHandler
     from .utils import Logging
     from .wsapi import Shard
 
@@ -52,8 +53,8 @@ class BaseSession:  # pylint: disable=too-many-instance-attributes
         self.user_agent: str = (
             f"DiscordBot ({__url__}, {__version__}) by {__author__}"
         )
-        self._handlers = None
-        self._once_handlers = None
+        self._handlers: EventHandler = None
+        self._once_handlers: EventHandler = None
         self.sync_events: bool = False
         self._gateway: str = ""
         self.log: Logging = None

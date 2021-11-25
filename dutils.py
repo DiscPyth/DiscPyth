@@ -115,6 +115,8 @@ if args.command == "check":
         print(f"Performing checks with following skipped,\n{', '.join(skp)}")
     else:
         print("Performing a full check.")
+    if args.i:
+        print("\u001b[38;5;208m[ WARNING ] Ignore mode is enabled, output logs may be hard to read\u001b[0m")
     for tool in todo:
         try:
             checkers[tool]()
@@ -126,7 +128,6 @@ if args.command == "check":
                 else:
                     print(f"An error occured while running {names[tool]}, ignoring...")
                     err = e.code
-                    pass
             else:
                 pass
     if args.i and err > 0:

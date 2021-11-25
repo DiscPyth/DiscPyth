@@ -137,6 +137,9 @@ class Shard:  # pylint: disable=too-many-instance-attributes
             self.ses.log.info(
                 f"Shard {self.sid} gateway event - {payload.type}", __name__
             )
+            await self.ses._handle(  # pylint: disable=protected-access
+                payload.type, payload.raw_data
+            )
             return payload
 
         if payload.operation == 1:
@@ -210,8 +213,6 @@ class WSSession(RESTSession):
                 continue
 
             asyncio.create_task(shard.connect())
-
-        await asyncio.Event().wait()
 
     async def close_ws(self):
         for _, shard in self._ws_conn.items():

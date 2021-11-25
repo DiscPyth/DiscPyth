@@ -55,8 +55,11 @@ __all__ = (
     "VoiceStateUpdate",
     "VoiceServerUpdate",
     "WebhooksUpdate",
+    # Constants
+    "Intents",
 )
 
+from enum import Enum, IntEnum
 from typing import Annotated, List, Literal
 
 from go_json import Struct
@@ -68,6 +71,8 @@ from go_json import Struct
 # - General Types (ex: User, Channel, Guild...)
 # - REST Endpoint payloads (ex: GetGateway, GetGatewayBot...)
 # - WebSocket payloads (ex: Resume, Hello...)
+# - Constants and stuff, constants may be repostioned based on their
+#   use but mainly they come after event payloads.
 
 
 # ======================================================================
@@ -374,4 +379,139 @@ class WebhooksUpdate(Struct):
 
 # ======================================================================
 #   WEBSOCKET PAYLOADS - END
+# ======================================================================
+
+
+# ======================================================================
+# CONSTANTS - START
+# ======================================================================
+
+
+class Intents(IntEnum):
+    # fmt: off
+    GUILDS                      = (1 << 0)  # noqa: E221
+    GUILD_MEMBERS               = (1 << 1)  # noqa: E221
+    GUILD_BANS                  = (1 << 2)  # noqa: E221
+    GUILD_EMOJIS_AND_STICKERS   = (1 << 3)  # noqa: E221
+    GUILD_INTEGRATIONS          = (1 << 4)  # noqa: E221
+    GUILD_WEBHOOKS              = (1 << 5)  # noqa: E221
+    GUILD_INVITES               = (1 << 6)  # noqa: E221
+    GUILD_VOICE_STATES          = (1 << 7)  # noqa: E221
+    GUILD_PRESENCES             = (1 << 8)  # noqa: E221
+    GUILD_MESSAGES              = (1 << 9)  # noqa: E221
+    GUILD_MESSAGE_REACTIONS     = (1 << 10)  # noqa: E221
+    GUILD_MESSAGE_TYPING        = (1 << 11)  # noqa: E221
+    DIRECT_MESSAGES             = (1 << 12)  # noqa: E221
+    DIRECT_MESSAGE_REACTIONS    = (1 << 13)  # noqa: E221
+    DIRECT_MESSAGE_TYPING       = (1 << 14)  # noqa: E221
+    GUILD_SCHEDULED_EVENTS      = (1 << 16)  # noqa: E221
+    # fmt: on
+
+    ALL_NON_PRIVLEGED = (
+        GUILDS
+        | GUILD_BANS
+        | GUILD_EMOJIS_AND_STICKERS
+        | GUILD_INTEGRATIONS
+        | GUILD_WEBHOOKS
+        | GUILD_INVITES
+        | GUILD_VOICE_STATES
+        | GUILD_MESSAGES
+        | GUILD_MESSAGE_REACTIONS
+        | GUILD_MESSAGE_TYPING
+        | DIRECT_MESSAGES
+        | DIRECT_MESSAGE_REACTIONS
+        | DIRECT_MESSAGE_TYPING
+        | GUILD_SCHEDULED_EVENTS
+    )
+
+    ALL = ALL_NON_PRIVLEGED | GUILD_MEMBERS | GUILD_PRESENCES
+
+
+class Events(Enum):
+    INTENT_BASED_EVENTS = {
+        (1 << 0): (
+            GuildCreate,
+            GuildDelete,
+            GuildUpdate,
+            GuildRoleCreate,
+            GuildRoleDelete,
+            GuildRoleUpdate,
+            ChannelCreate,
+            ChannelDelete,
+            ChannelPinsUpdate,
+            ChannelUpdate,
+            ThreadCreate,
+            ThreadDelete,
+            ThreadUpdate,
+            ThreadListSync,
+            ThreadMemberUpdate,
+            ThreadMembersUpdate,
+            StageInstanceCreate,
+            StageInstanceDelete,
+            StageInstanceUpdate,
+        ),
+        (1 << 1): (
+            GuildMemberAdd,
+            GuildMemberRemove,
+            GuildMemberUpdate,
+            ThreadMembersUpdate,
+        ),
+        (1 << 2): (GuildBanAdd, GuildBanRemove),
+        (1 << 3): (GuildEmojisUpdate, GuildStickersUpdate),
+        (1 << 4): (
+            GuildIntegrationsUpdate,
+            IntegrationCreate,
+            IntegrationDelete,
+            IntegrationUpdate,
+        ),
+        (1 << 5): (WebhooksUpdate,),
+        (1 << 6): (InviteCreate, InviteDelete),
+        (1 << 7): (VoiceStateUpdate,),
+        (1 << 8): (PresenceUpdate,),
+        (1 << 9): (
+            MessageCreate,
+            MessageUpdate,
+            MessageDelete,
+            MessageDeleteBulk,
+        ),
+        (1 << 10): (
+            MessageReactionAdd,
+            MessageReactionRemove,
+            MessageReactionRemoveAll,
+            MessageReactionRemoveEmoji,
+        ),
+        (1 << 11): (TypingStart,),
+        (1 << 12): (
+            MessageCreate,
+            MessageUpdate,
+            MessageDelete,
+            ChannelPinsUpdate,
+        ),
+        (1 << 13): (
+            MessageReactionAdd,
+            MessageReactionRemove,
+            MessageReactionRemoveAll,
+            MessageReactionRemoveEmoji,
+        ),
+        (1 << 14): (TypingStart,),
+        (1 << 16): (
+            GuildScheduledEventCreate,
+            GuildScheduledEventDelete,
+            GuildScheduledEventUpdate,
+            GuildScheduledEventUserAdd,
+            GuildScheduledEventUserRemove,
+        ),
+    }
+
+    NON_INTENT_BASED_EVENTS = {
+        "READY": Ready,
+        "RESUMED": Resumed,
+        "INTERACTION_CREATE": InteractionCreate,
+        "USER_UPDATE": UserUpdate,
+        "VOICE_SERVER_UPDATE": VoiceServerUpdate,
+    }
+
+
+# ======================================================================
+# CONSTANTS - END
 # ======================================================================

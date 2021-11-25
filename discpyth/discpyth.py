@@ -3,6 +3,7 @@ from __future__ import annotations
 __all__ = ("Session",)
 
 import asyncio
+import inspect
 import os
 import signal
 import sys
@@ -11,12 +12,13 @@ from collections.abc import Sequence as SequenceType
 from contextlib import asynccontextmanager
 from typing import Sequence, Tuple, Union
 
+from .eventhandlers import EventHandler
 from .structs import Identify, IdentifyProperties
 from .utils import Logging
 from .wsapi import Shard, WSSession
 
 
-class Session(WSSession):
+class Session(WSSession):  # pylint: disable=too-many-instance-attributes
     def __init__(
         self,
         token,
@@ -96,6 +98,9 @@ class Session(WSSession):
         else:
             self.log = Logging("", 0, False, "", "")
 
+        self._handlers = EventHandler(intents, False)
+        self._once_handlers = EventHandler(intents, True)
+
     @asynccontextmanager
     async def _openmanager(self):
         try:
@@ -130,6 +135,7 @@ class Session(WSSession):
             async with self._openmanager():
                 # Open all shards
                 await self._open_ws()
+                await asyncio.Event().wait()
 
         try:
             # Since get_event_loop is deprecated i dont really want to
@@ -159,3 +165,31 @@ class Session(WSSession):
         if self._client is not None:
             await self._client.close()
             self._client = None  # type: ignore
+
+    def add_handler(self, func):
+        def wrapped_handler(func_):
+            if self._handlers is not None:
+                logparms = self._handlers + func_
+                self.log.log(*logparms, __name__)
+            return func_
+
+        if inspect.isclass(func):
+            return wrapped_handler
+
+        return wrapped_handler(func)
+
+    def add_once_handler(self, func):
+        def wrapped_handler(func_):
+            if self._once_handlers is not None:
+                logparms = self._once_handlers + func_
+                self.log.log(*logparms, __name__)
+            return func_
+
+        if inspect.isclass(func):
+            return wrapped_handler
+
+        return wrapped_handler(func)
+
+    async def _handle(self, event: str, data: str):
+        await self._handlers(event, self, data)
+        await self._once_handlers(event, self, data)

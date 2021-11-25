@@ -1,5 +1,5 @@
 <p align="center">
-	<img src="https://raw.githubusercontent.com/DiscPyth/.github/master/assets/DiscPyth.png" alt="DiscPyth" title="Logo of DiscPyth" width="200px"/>
+    <img src="https://raw.githubusercontent.com/DiscPyth/.github/master/assets/DiscPyth.png" alt="DiscPyth" title="Logo of DiscPyth" width="200px"/>
 </p>
 
 # DiscPyth
@@ -13,7 +13,7 @@
 [![GitHub Repo stars](https://img.shields.io/github/stars/DiscPyth/DiscPyth?color=22272e&label=%20&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGFyaWEtaGlkZGVuPSJ0cnVlIiBoZWlnaHQ9IjE2IiB2aWV3Qm94PSIwIDAgMTYgMTYiIHZlcnNpb249IjEuMSIgd2lkdGg9IjE2IiBkYXRhLXZpZXctY29tcG9uZW50PSJ0cnVlIiBjbGFzcz0ib2N0aWNvbiBvY3RpY29uLXN0YXItZmlsbCBtci0xIj4KICAgIDxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgZD0iTTggLjI1YS43NS43NSAwIDAxLjY3My40MThsMS44ODIgMy44MTUgNC4yMS42MTJhLjc1Ljc1IDAgMDEuNDE2IDEuMjc5bC0zLjA0NiAyLjk3LjcxOSA0LjE5MmEuNzUuNzUgMCAwMS0xLjA4OC43OTFMOCAxMi4zNDdsLTMuNzY2IDEuOThhLjc1Ljc1IDAgMDEtMS4wODgtLjc5bC43Mi00LjE5NEwuODE4IDYuMzc0YS43NS43NSAwIDAxLjQxNi0xLjI4bDQuMjEtLjYxMUw3LjMyNy42NjhBLjc1Ljc1IDAgMDE4IC4yNXoiIGZpbGw9IiNFRkVGRUYiLz4KPC9zdmc%2B&style=flat-square)](https://github.com/DiscPyth/DiscPyth/stargazers)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-black?style=flat-square&labelColor=22272e)](https://github.com/psf/black)
 
-[![Code Quality Checks](https://github.com/DiscPyth/DiscPyth/actions/workflows/cq%20checks.yml/badge.svg)](https://github.com/DiscPyth/DiscPyth/actions/workflows/cq%20checks.yml)
+[![Code Quality Checks](https://img.shields.io/github/workflow/status/DiscPyth/DiscPyth/Code%20Quality%20Checks?label=Code%20Quality%20Checks&logo=github&style=flat-square&labelColor=22272e)](https://github.com/DiscPyth/DiscPyth/actions/workflows/cq%20checks.yml)
 
 ### TL;DR : DiscPyth is an unofficial wrapper in Python for the official Discord API.
 
@@ -27,9 +27,10 @@ DiscPyth is a wrapper built with Python for the Discord API, it is based on the 
 import discpyth
 
 # create a new session
-ses = discpyth.Session("MTA1NjgxMzYxMzA2ODE2NTIy.MTUxNDI2ODAwLjA=.cPW6VQMVp8pdbfUm8FHHWR9+UCpYpIgyhytMpZj9xG8=")
-# Set your required intents
-ses.set_intents(513)
+ses = discpyth.Session(
+    "MTA1NjgxMzYxMzA2ODE2NTIy.MTUxNDI2ODAwLjA=.cPW6VQMVp8pdbfUm8FHHWR9+UCpYpIgyhytMpZj9xG8=",
+    discpyth.Intents.ALL_NON_PRIVLEGED,
+)
 
 # Create an Event callback
 @ses.add_handler(discpyth.Ready)
@@ -39,12 +40,9 @@ ses.set_intents(513)
 async def bot_is_online(s, r):
     print(f"{r.user.tag} is now online!")
 
-try:
-    # Open the connection to Discord
-    ses.open()
-except KeyboardInterrupt:
-    # Close the connection to Discord
-    ses.close()
+
+# Open the connection to Discord
+ses.open()
 ```
 
 ### Contibuting
