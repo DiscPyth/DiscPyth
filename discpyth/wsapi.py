@@ -131,7 +131,17 @@ class Shard:  # pylint: disable=too-many-instance-attributes
         payload: Event = go_json.loads(payload, Event)  # type: ignore
         self.seq = payload.seq
 
-        self.ses.log.spam(payload.__repr__(), __name__)
+        self.ses.log.spam(
+            "Event{ "
+            + (
+                f"operation: {payload.operation},"
+                f" type: {payload.type},"
+                f" seq: {payload.seq},"
+                f" raw_data: {(payload.raw_data[:10] + '...' + payload.raw_data[-10:] if len(payload.raw_data) > 20 else payload.raw_data)}"
+            )
+            + " }",
+            __name__,
+        )
 
         if payload.operation == 0:
             self.ses.log.info(

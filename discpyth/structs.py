@@ -75,6 +75,28 @@ from go_json import Struct
 #   use but mainly they come after event payloads.
 
 
+class User(Struct):
+    id: str
+    username: str
+    discriminator: str
+    avatar: str
+    bot: Annotated[str, {"optional": True}]
+    system: Annotated[bool, {"optional": True}]
+    mfa_enabled: Annotated[bool, {"optional": True}]
+    banner: Annotated[str, {"optional": True}]
+    accent_color: Annotated[int, {"optional": True}]
+    locale: Annotated[str, {"optional": True}]
+    verified: Annotated[bool, {"optional": True}]
+    email: Annotated[str, {"optional": True}]
+    flags: Annotated[int, {"optional": True}]
+    premium_type: Annotated[int, {"optional": True}]
+    public_flags: Annotated[int, {"optional": True}]
+
+    @property
+    def tag(self) -> str:
+        return f"{self.username}#{self.discriminator}"
+
+
 # ======================================================================
 #   REST PAYLOADS - START
 # ======================================================================
@@ -145,6 +167,12 @@ class Identify(Struct):
 # Genral Events
 class Ready(Struct):
     __name__ = "READY"
+    version: Annotated[int, {"name": "v"}]
+    user: Annotated[User, {"object": User}]
+    guilds: list
+    session_id: str
+    shard: int
+    application: dict
 
 
 class Resumed(Struct):

@@ -43,7 +43,7 @@ class EventHandler:
         self.event_dispatchers: Dict[str, EventDispatcher] = {}
         self.event_dispatchers.update(
             **{
-                name: EventDispatcher(None)
+                name: EventDispatcher(event_struct)
                 for name, event_struct in Events.NON_INTENT_BASED_EVENTS.value.items()
             }
         )
@@ -52,7 +52,7 @@ class EventHandler:
                 self.event_dispatchers.update(
                     **{
                         event_struct.__dict__["__name__"]: EventDispatcher(
-                            None
+                            event_struct
                         )
                         for event_struct in event_struct_t
                     }

@@ -5,7 +5,7 @@ name = "pypi"
 
 [packages]
 aiohttp = "*"
-go-json = ">=0.3.7.post3"
+go-json = ">=0.3.7.post5"
 
 [dev-packages]
 pylint = "*"

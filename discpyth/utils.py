@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import sys
 import time
 
@@ -12,7 +14,9 @@ class WSClosedError(Exception):
     def __init__(self, code, msg):
         self.code = code
         self.msg = msg
-        self.rmsg = f"{code if code != '' or code is not None else ''}{' - '+msg if msg != '' or msg is not None else ''}"
+        self.rmsg = (code if code != "" or code is not None else "") + (
+            " - " + msg if msg != "" or msg is not None else ""
+        )
         super().__init__(self.rmsg)
 
 
@@ -20,6 +24,101 @@ class WSError(Exception):
     def __init__(self, msg):
         self.msg = msg
         super().__init__(msg)
+
+
+class Snowflake:
+    __slots__ = {"snowflake"}
+
+    def __init__(self, snowflake) -> None:
+        self.snowflake: int = int(snowflake)
+
+    @property
+    def timestamp(self) -> int:
+        return (self.snowflake >> 22) + 1420070400000
+
+    @property
+    def time(self):
+        # ISO8601 timestamp
+        return time.strftime(
+            "%Y-%m-%dT%H:%M:%S%z", time.gmtime((self.timestamp / 1000))
+        )
+
+    @property
+    def worker_id(self) -> int:
+        return (self.snowflake & 0x3E0000) >> 17
+
+    @property
+    def process_id(self) -> int:
+        return (self.snowflake & 0x1F000) >> 12
+
+    @property
+    def increment(self) -> int:
+        return self.snowflake & 0xFFF
+
+    def __repr__(self) -> str:
+        return (
+            f"Snowflake[{self.snowflake}] "
+            + "{ "
+            + (
+                f"Timestamp: {self.timestamp},"
+                f" Worker ID: {self.worker_id},"
+                f" Process ID: {self.process_id},"
+                f" Increment: {self.increment}"
+            )
+            + " }"
+        )
+
+    # Cannot type hint these due to Liskov substitution principle
+    def __lt__(self, snowflake) -> bool:
+        if isinstance(snowflake, str):
+            try:
+                snowflake = int(snowflake)
+            except ValueError:
+                return False
+            else:
+                return self.snowflake > snowflake
+        if isinstance(snowflake, int):
+            return self.snowflake > snowflake
+        if isinstance(snowflake, self.__class__):
+            return self.snowflake > snowflake.snowflake
+        return NotImplemented
+
+    def __le__(self, snowflake) -> bool:
+        if isinstance(snowflake, str):
+            try:
+                snowflake = int(snowflake)
+            except ValueError:
+                return False
+            else:
+                return self.snowflake >= snowflake
+        if isinstance(snowflake, int):
+            return self.snowflake >= snowflake
+        if isinstance(snowflake, self.__class__):
+            return self.snowflake >= snowflake.snowflake
+        return NotImplemented
+
+    def __eq__(self, snowflake) -> bool:
+        if isinstance(snowflake, str):
+            try:
+                snowflake = int(snowflake)
+            except ValueError:
+                return False
+            else:
+                return self.snowflake == snowflake
+        if isinstance(snowflake, int):
+            return self.snowflake == snowflake
+        if isinstance(snowflake, self.__class__):
+            return self.snowflake == snowflake.snowflake
+        return NotImplemented
+
+    def __ne__(self, snowflake) -> bool:
+        return not self == snowflake
+
+    def __gt__(self, snowflake) -> bool:
+        return not self < snowflake
+
+    def __ge__(self, snowflake) -> bool:
+        return not self <= snowflake
 
 
 _LEVEL_S_NAMES = {
@@ -97,7 +196,7 @@ class Logging:  # pylint: disable=too-many-instance-attributes
             lvl = 5
         rmsg = self.fmt.format(
             name=self.lname,
-            time=time.ctime(time.time()),
+            time=time.asctime(time.gmtime(time.time())),
             module=mod,
             level=_LEVEL_NAMES[lvl],
             msg=msg,
