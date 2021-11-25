@@ -32,6 +32,11 @@ fmt.add_argument(
     "-s",
     help="Specify formatting tools to be skipped, 'i' for isort, 'b' for black. Separate by comma(,) ex '-s i,b'.",
 )
+fmt.add_argument(
+    "-d",
+    action="store_true",
+    help="Print out the diff instead of formatting the files."
+)
 
 args = parser.parse_args()
 
@@ -41,9 +46,11 @@ def isrt():
     isort(argv=["--check", "./discpyth"])
 
 
-def f_isrt():
+def f_isrt(diff=False):
     print("Checking imports with isort")
-    isort(argv=["./discpyth"])
+    iargs = ["./discpyth"]
+    iargs.append("--diff") if diff else None
+    isort(argv=iargs)
 
 
 def blk():
@@ -54,12 +61,14 @@ def blk():
     main(["--check", "./discpyth"])
 
 
-def f_blk():
+def f_blk(diff=False):
     print("Checking formatting with black")
     maybe_install_uvloop()
     freeze_support()
     patch_click()
-    main(["./discpyth"])
+    bargs = ["./discpyth"]
+    bargs.append("--diff") if diff else None
+    main(bargs)
 
 
 def plnt():
@@ -142,7 +151,7 @@ if args.command == "fmt":
         print("Formatting...")
     for tool in todo:
         try:
-            formatters[tool]()
+            formatters[tool](True if args.d else False)
         except SystemExit as e:
             if e.code != 0:
                 raise

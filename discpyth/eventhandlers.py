@@ -132,7 +132,10 @@ class EventHandler:
             await self.event_dispatchers[event](session, data)
         except KeyError:
             if not self.is_once:
-                session.log.warn(f"Event not registered or unknown! {self.is_once}", __name__)
+                session.log.warn(
+                    f"Event not registered or unknown! {self.is_once}",
+                    __name__,
+                )
         finally:
             if self.is_once:
                 try:
