@@ -115,7 +115,7 @@ class SessionStartLimit(Struct):
 
 class GetGatewayBot(Struct):
     url: str
-    shards: List[int]
+    shards: int
     session_start_limit: Annotated[
         SessionStartLimit, {"object": SessionStartLimit}
     ]

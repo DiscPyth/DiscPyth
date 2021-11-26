@@ -41,12 +41,6 @@ class EventHandler:
 
     def __init__(self, intents, once):
         self.event_dispatchers: Dict[str, EventDispatcher] = {}
-        self.event_dispatchers.update(
-            **{
-                name: EventDispatcher(event_struct)
-                for name, event_struct in Events.NON_INTENT_BASED_EVENTS.value.items()
-            }
-        )
         for intent, event_struct_t in Events.INTENT_BASED_EVENTS.value.items():
             if intents & intent:
                 self.event_dispatchers.update(
@@ -57,6 +51,13 @@ class EventHandler:
                         for event_struct in event_struct_t
                     }
                 )
+
+        self.event_dispatchers.update(
+            **{
+                name: EventDispatcher(event_struct)
+                for name, event_struct in Events.NON_INTENT_BASED_EVENTS.value.items()
+            }
+        )
 
         # I'm definitely a ONCE, lol... if you don't get the reference
         # then ignore this comment

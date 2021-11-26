@@ -8,8 +8,7 @@ from typing import TYPE_CHECKING, Optional
 import aiohttp
 import go_json
 
-from .endpoints import Endpoints
-from .restapi import RESTSession
+from .event import EventSession
 from .structs import Event, Hello
 from .utils import WSClosedError
 
@@ -206,16 +205,8 @@ class Shard:  # pylint: disable=too-many-instance-attributes
             await self.open()
 
 
-class WSSession(RESTSession):
+class WSSession(EventSession):
     async def _open_ws(self):
-        if self._gateway == "":
-            self._gateway = await self.get_gateway()
-            self._gateway.url = (
-                self._gateway.url
-                + "?v="
-                + Endpoints.API_VERSION
-                + "&encoding=json"
-            )
 
         for shard_id, shard in self._ws_conn.items():
             if shard.ws_conn is not None:
@@ -225,5 +216,6 @@ class WSSession(RESTSession):
             asyncio.create_task(shard.connect())
 
     async def close_ws(self):
-        for _, shard in self._ws_conn.items():
-            await shard.close()
+        if self._ws_conn is not None:
+            for _, shard in self._ws_conn.items():
+                await shard.close()

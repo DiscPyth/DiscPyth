@@ -3,38 +3,63 @@ from __future__ import annotations
 __all__ = ("Session",)
 
 import asyncio
-import inspect
 import os
 import signal
 import sys
 import zlib
 from collections.abc import Sequence as SequenceType
 from contextlib import asynccontextmanager
-from typing import Sequence, Tuple, Union
 
+import aiohttp
+
+from .base_classes import ShardConfig
+from .endpoints import Endpoints
 from .eventhandlers import EventHandler
 from .structs import Identify, IdentifyProperties
 from .utils import Logging
 from .wsapi import Shard, WSSession
 
 
+def create_shard(sid, scount, self):
+    return Shard(
+        buffer=bytearray(),
+        inflator=zlib.decompressobj(),
+        sequence=0,
+        session_id="",
+        identify=Identify(
+            token=str(self.token),
+            properties=IdentifyProperties(
+                **{
+                    "$os": sys.platform,
+                    "$browser": "DiscPyth",
+                    "$device": "DiscPyth",
+                }
+            ),
+            compress=False,
+            large_threshold=250,
+            shard=[sid, scount],
+            intents=int(self.intents),
+        ),
+        session=self,
+        lock=asyncio.Lock(),
+    )
+
+
 class Session(WSSession):  # pylint: disable=too-many-instance-attributes
-    def __init__(
+    def __init__(  # pylint: disable=dangerous-default-value
         self,
         token,
         intents,
         /,
         *,
-        shard_id: Union[Sequence[int], int] = 0,
-        shard_count=1,
+        shard_config: ShardConfig = {
+            "ids": 0,
+            "count": 1,
+            "auto": False,
+        },
         **options,
     ) -> None:
         WSSession.__init__(self)
-        # If anything fails in the code below, this will make sure things
-        # don't go haywire since its just gonna launch Shard 0 which will
-        # receive all the events for us, but I still need to do some
-        # confirmation regarding shards
-        shard_range: Tuple[int, int] = (0, 1)
 
         # shard_id can either be an int or a tuple
         # int   -> Launch a single shard
@@ -43,51 +68,39 @@ class Session(WSSession):  # pylint: disable=too-many-instance-attributes
         # Since we are using a for loop with range() below, we need to
         # convert it into a tuple which will be
         # (shard_id, (shard_id + 1))
-        if isinstance(shard_id, int) and 0 <= shard_id <= shard_count:
+        shard_id = shard_config.get("ids", 0)
+        shard_count = shard_config.get("count", 1)
+        if isinstance(shard_id, int) and 0 <= shard_id < shard_count:
             # Shard id will never be equal to shard count, it will be at
             # max => (shard_count - 1) `range()` kinda handles this for us
             # and it also cannot be less than 0.
-            shard_range = (shard_id, (shard_id + 1))
-        if (
-            isinstance(shard_id, SequenceType)
-            and len(shard_id) == 2
-            and shard_id[1] <= shard_count
-            and shard_id[0] >= 0
-        ):
-            # If the user wants to launch multiple shards then they can
-            # pass shard_id as a tuple, but we need to make sure that
-            # min is not less than 0 and max is not more than
-            # shard_count.
-            shard_range = tuple(shard_id)  # type: ignore
+            shard_config["ids"] = (shard_id, (shard_id + 1))
+        if isinstance(shard_id, SequenceType):
+            if (
+                len(shard_id) >= 2
+                and shard_id[-1] <= shard_count
+                and shard_id[0] >= 0
+            ):
+                # If the user wants to launch multiple shards then they can
+                # pass shard_id as a tuple, but we need to make sure that
+                # min is not less than 0 and max is not more than
+                # shard_count.
+                shard_config["ids"] = tuple(shard_id)
+            else:
+                raise IndexError(
+                    "Sequence of Shard IDs must be of length 2 or more"
+                )
 
+        # Shards should be "created" during `open()`, because if we
+        # create the dictionary in `__init__()` we cannot make a call to
+        # /gateway/bot and we would have to then overwrite the dict in
+        # `open()` if auto is set to True hence we just save the
+        # configuration in `__init__`
+        self.intents = intents
+        self.shard_config = shard_config
         self.max_rest_retries = options.get("max_rest_retries", 3)
         self.user_agent: str = options.get("user_agent", self.user_agent)
-        self._token = str(token)
-        self._ws_conn = {
-            s: Shard(
-                buffer=bytearray(),
-                inflator=zlib.decompressobj(),
-                sequence=0,
-                session_id="",
-                identify=Identify(
-                    token=str(token),
-                    properties=IdentifyProperties(
-                        **{
-                            "$os": sys.platform,
-                            "$browser": "DiscPyth",
-                            "$device": "DiscPyth",
-                        }
-                    ),
-                    compress=False,
-                    large_threshold=250,
-                    shard=[s, shard_count],
-                    intents=int(intents),
-                ),
-                session=self,
-                lock=asyncio.Lock(),
-            )
-            for s in range(*shard_range)
-        }
+        self.token = str(token)
         if options.get("log", False):
             self.log = Logging(
                 options.get("name", "DiscPyth"),
@@ -122,7 +135,7 @@ class Session(WSSession):  # pylint: disable=too-many-instance-attributes
     def open(self):
         async def wrapped_open():
             self.log.info(
-                f"Received open command, opening {len(self._ws_conn)} connection(s) to discord gateway",
+                "Received open command, opening connection(s) to discord gateway",
                 __name__,
             )
             # Might be helpful
@@ -133,12 +146,36 @@ class Session(WSSession):  # pylint: disable=too-many-instance-attributes
             # idea of context managers, or I was about to work with some
             # hacky-ish event loop code.
             async with self._openmanager():
+                if self._client is None:
+                    self._client = aiohttp.ClientSession()
+                self._gateway = await self.get_gateway_bot()
+                self._gateway.url = (
+                    self._gateway.url
+                    + "?v="
+                    + Endpoints.API_VERSION
+                    + "&encoding=json"
+                )
+
+                if self.shard_config["auto"]:
+                    self._ws_conn = {
+                        s: create_shard(s, self._gateway.shards, self)
+                        for s in range(*self._gateway.shards)
+                    }
+                else:
+                    self._ws_conn = {
+                        s: create_shard(s, self.shard_config["count"], self)
+                        for s in (
+                            range(*self.shard_config["ids"])
+                            if len(self.shard_config["ids"]) == 2
+                            else self.shard_config["ids"]
+                        )
+                    }
                 # Open all shards
                 await self._open_ws()
                 await asyncio.Event().wait()
 
         try:
-            # Since get_event_loop is deprecated i dont really want to
+            # Since get_event_loop is deprecated I dont really want to
             # mess with loop creation so context manager + asyncio.run
             # works both ways, forwards compatible and backwards
             # compatible with python versions. Yay!
@@ -165,31 +202,3 @@ class Session(WSSession):  # pylint: disable=too-many-instance-attributes
         if self._client is not None:
             await self._client.close()
             self._client = None  # type: ignore
-
-    def add_handler(self, func):
-        def wrapped_handler(func_):
-            if self._handlers is not None:
-                logparms = self._handlers + func_
-                self.log.log(*logparms, __name__)
-            return func_
-
-        if inspect.isclass(func):
-            return wrapped_handler
-
-        return wrapped_handler(func)
-
-    def add_once_handler(self, func):
-        def wrapped_handler(func_):
-            if self._once_handlers is not None:
-                logparms = self._once_handlers + func_
-                self.log.log(*logparms, __name__)
-            return func_
-
-        if inspect.isclass(func):
-            return wrapped_handler
-
-        return wrapped_handler(func)
-
-    async def _handle(self, event: str, data: str):
-        await self._handlers(event, self, data)
-        await self._once_handlers(event, self, data)
