@@ -9,3 +9,7 @@ class Endpoints:
 
     ENDPOINT_GATEWAY = ENDPOINT_API + "gateway"
     ENDPOINT_GATEWAY_BOT = ENDPOINT_GATEWAY + "/bot"
+
+    ENDPOINT_GET_CHANNEL_MESSAGE = (
+        ENDPOINT_API + "/channels/{channel_id}/messages/{message_id}"
+    )

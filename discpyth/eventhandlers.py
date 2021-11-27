@@ -4,9 +4,9 @@ import asyncio
 import inspect
 from typing import TYPE_CHECKING, Any, Callable, Coroutine, Dict, Set, Tuple
 
-from go_json import S, loads
+from .fur_json import S, loads
 
-from .structs import Events
+from .events import Events
 
 if TYPE_CHECKING:
     from .discpyth import Session

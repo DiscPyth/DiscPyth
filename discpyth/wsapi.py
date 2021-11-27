@@ -6,10 +6,10 @@ import asyncio
 from typing import TYPE_CHECKING, Optional
 
 import aiohttp
-import go_json
+from . import fur_json
 
 from .event import EventSession
-from .structs import Event, Hello
+from .events import Event, Hello
 from .utils import WSClosedError
 
 if TYPE_CHECKING:
@@ -78,7 +78,7 @@ class Shard:  # pylint: disable=too-many-instance-attributes
         eve = await self._on_event()
         assert isinstance(eve, Event)
 
-        hello: Hello = go_json.loads(eve.raw_data, Hello)
+        hello: Hello = fur_json.loads(eve.raw_data, Hello)
 
         self.ses.log.info(
             f"Shard {self.sid} is now sending Identify Payload", __name__
@@ -127,7 +127,7 @@ class Shard:  # pylint: disable=too-many-instance-attributes
             self.buffer = bytearray()
             payload = payload.decode("utf-8")  # type: ignore
 
-        payload: Event = go_json.loads(payload, Event)  # type: ignore
+        payload: Event = fur_json.loads(payload, Event)  # type: ignore
         self.seq = payload.seq
 
         self.ses.log.spam(
@@ -182,7 +182,7 @@ class Shard:  # pylint: disable=too-many-instance-attributes
             event = Event()
             event.operation = operation
             event.raw_data = data  # Not really "raw" data
-            raw_payload = go_json.dumps(event)
+            raw_payload = fur_json.dumps(event)
 
             await self.ws_conn.send_str(raw_payload)
 

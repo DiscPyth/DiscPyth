@@ -1,4 +1,7 @@
 import inspect
+from typing import Annotated
+
+from .fur_json import Struct
 
 from .restapi import RESTSession
 
