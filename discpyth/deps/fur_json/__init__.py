@@ -106,7 +106,6 @@ __author__ = (
 )
 
 import codecs
-from typing import Any, Type, Union
 
 from .decoder import JSONDecodeError, JSONDecoder, S
 from .encoder import JSONEncoder
@@ -123,7 +122,7 @@ _default_encoder = JSONEncoder(
 )
 
 
-def dump(
+def dump(  # pylint: disable=invalid-name;
     obj,
     fp,
     *,
@@ -299,7 +298,9 @@ def dumps(
 _default_decoder = JSONDecoder(object_hook=None, object_pairs_hook=None)
 
 
-def detect_encoding(b):  # pylint: disable=too-many-return-statements;
+def detect_encoding(  # pylint: disable=too-many-return-statements, invalid-name;
+    b,
+):
     bstartswith = b.startswith
     if bstartswith((codecs.BOM_UTF32_BE, codecs.BOM_UTF32_LE)):
         return "utf-32"
@@ -329,7 +330,7 @@ def detect_encoding(b):  # pylint: disable=too-many-return-statements;
     return "utf-8"
 
 
-def load(
+def load(  # pylint: disable=invalid-name;
     fp,
     object_: S,
     *,
@@ -373,7 +374,7 @@ def load(
     )
 
 
-def loads(
+def loads(  # pylint: disable=invalid-name;
     s,
     object_: S,
     *,

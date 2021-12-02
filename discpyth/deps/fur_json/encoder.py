@@ -29,13 +29,13 @@ ESCAPE_DCT = {
     "\t": "\\t",
 }
 for i in range(0x20):
-    ESCAPE_DCT.setdefault(chr(i), "\\u{0:04x}".format(i))
+    ESCAPE_DCT.setdefault(chr(i), f"\\u{i:04x}")
     # ESCAPE_DCT.setdefault(chr(i), '\\u%04x' % (i,))
 
 INFINITY = float("inf")
 
 
-def py_encode_basestring(s) -> str:
+def py_encode_basestring(s) -> str:  # pylint: disable=invalid-name
     """Return a JSON representation of a Python string"""
 
     def replace(match):
@@ -47,24 +47,26 @@ def py_encode_basestring(s) -> str:
 encode_basestring = c_encode_basestring or py_encode_basestring
 
 
-def py_encode_basestring_ascii(s) -> str:
+def py_encode_basestring_ascii(s) -> str:  # pylint: disable=invalid-name
     """Return an ASCII-only JSON representation of a Python string"""
 
     def replace(match):
-        s = match.group(0)
+        s = match.group(0)  # pylint: disable=invalid-name
         try:
             return ESCAPE_DCT[s]
         except KeyError:
-            n = ord(s)
+            n = ord(s)  # pylint: disable=invalid-name
             if n < 0x10000:  # pylint: disable=no-else-return
-                return "\\u{0:04x}".format(n)
+                return f"\\u{n:04x}"
                 # return '\\u%04x' % (n,)
             else:
                 # surrogate pair
-                n -= 0x10000
-                s1 = 0xD800 | ((n >> 10) & 0x3FF)
-                s2 = 0xDC00 | (n & 0x3FF)
-                return "\\u{0:04x}\\u{1:04x}".format(s1, s2)
+                n -= 0x10000  # pylint: disable=invalid-name
+                s1 = 0xD800 | (  # pylint: disable=invalid-name
+                    (n >> 10) & 0x3FF
+                )
+                s2 = 0xDC00 | (n & 0x3FF)  # pylint: disable=invalid-name
+                return f"\\u{s1:04x}\\u{s2:04x}"
 
     return '"' + ESCAPE_ASCII.sub(replace, s) + '"'
 
@@ -172,7 +174,7 @@ class JSONEncoder:  # pylint: disable=too-many-instance-attributes
         if default is not None:
             self.default = default  # type: ignore
 
-    def default(  # pylint: disable=method-hidden, no-self-use;
+    def default(  # pylint: disable=method-hidden, no-self-use, invalid-name;
         self, o
     ) -> NoReturn:
         """Implement this method in a subclass such that it returns
@@ -198,7 +200,7 @@ class JSONEncoder:  # pylint: disable=too-many-instance-attributes
             f"is not JSON serializable"
         )
 
-    def encode(self, o) -> str:
+    def encode(self, o) -> str:  # pylint: disable=invalid-name
         """Return a JSON string representation of a Python data structure.
 
         >>> from json.encoder import JSONEncoder
@@ -220,7 +222,9 @@ class JSONEncoder:  # pylint: disable=too-many-instance-attributes
             chunks = list(chunks)  # type: ignore
         return "".join(chunks)
 
-    def iterencode(self, o, _one_shot=False) -> Iterator[str]:
+    def iterencode(  # pylint: disable=invalid-name
+        self, o, _one_shot=False
+    ) -> Iterator[str]:
         """Encode the given object and yield each string
         representation as available.
 
@@ -239,7 +243,7 @@ class JSONEncoder:  # pylint: disable=too-many-instance-attributes
         else:
             _encoder = encode_basestring
 
-        def floatstr(
+        def floatstr(  # pylint: disable=invalid-name
             o,
             allow_nan=self.allow_nan,
             _repr=float.__repr__,
@@ -295,10 +299,10 @@ def _make_iterencode(  # pylint: disable=too-many-arguments, too-many-statements
     _one_shot,
     # HACK: hand-optimized bytecode; turn globals into locals
     # pylint: disable=redefined-builtin
-    ValueError=ValueError,  # noqa: N803
+    ValueError=ValueError,  # noqa: N803  # pylint: disable=invalid-name
     dict=dict,
     float=float,
-    id=id,
+    id=id,  # pylint: disable=invalid-name
     int=int,
     isinstance=isinstance,
     list=list,
@@ -454,7 +458,7 @@ def _make_iterencode(  # pylint: disable=too-many-arguments, too-many-statements
         if markers is not None:
             del markers[markerid]
 
-    def _iterencode(
+    def _iterencode(  # pylint: disable=invalid-name
         o: Union[List[Dict[str, int]], dict, dict], _current_indent_level: int
     ) -> Generator:  # pylint: disable=too-many-branches;
         if isinstance(o, str):

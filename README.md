@@ -17,7 +17,13 @@
 
 ### TL;DR : DiscPyth is an unofficial wrapper in Python for the official Discord API.
 
-DiscPyth is a wrapper built with Python for the Discord API, it is based on the very awesome Discord API wrapper for golang by **[@bwmarrin](https://github.com/bwmarrin)** called **[discordgo](https://github.com/bwmarrin/discordgo)** it is both simple and easy to use. The fact that DiscPyth is just a discordgo clone in Python makes DiscPyth also simple and easy to use.
+DiscPyth is a Discord API wrapper in Python, built based off of the
+very awesome DiscordGo library by bwmarrin.
+
+DiscordGo is a simple and easy to use library for interacting with the
+Discord API. The fact that DIscPyth is basically a DiscordGo clone
+in Python makes it easy to get started with and its pretty simple to
+understand.
 
 #### Documentation : `WIP`
 
@@ -26,27 +32,24 @@ DiscPyth is a wrapper built with Python for the Discord API, it is based on the 
 ```py
 import discpyth
 
-# create a new session
-ses = discpyth.Session(
+# Create a session with your bot token and the intents you need
+session = discpyth.Session(
     "MTA1NjgxMzYxMzA2ODE2NTIy.MTUxNDI2ODAwLjA=.cPW6VQMVp8pdbfUm8FHHWR9+UCpYpIgyhytMpZj9xG8=",
-    discpyth.Intents.ALL_NON_PRIVLEGED,
+    513
 )
 
-# Create an Event callback
-@ses.add_handler(discpyth.Ready)
-# You can also use typehints
-# @ses.add_handler
-# async def bot_is_online(s, r: discpyth.Ready):
-async def bot_is_online(s, r):
-    print(f"{r.user.tag} is now online!")
+@session.add_handler
+# Create a new event callback
+# You can even use type annotataions
+# async def bot_is_ready(ses, ready: discpyth.Ready):
+async def bot_is_ready(ses, ready):
+    print("Bot is ready!")
 
-
-# Open the connection to Discord
-ses.open()
+session.open()
 ```
 
 ### Contibuting
 
 Contibutions are more than welcomed 😄.\
 But first make sure to read through our [Contribution Guidelines](.github/CONTRIBUTING.md).
-> Don't worry it isn't a big-fat 1000 line ToS, just some tips and information about what is accepted and what is not.
+> Don't worry it isn't a big-fat 1000 line ToS thingy, just some tips and information about what is accepted and what is not.

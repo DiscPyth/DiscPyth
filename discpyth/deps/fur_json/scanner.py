@@ -24,7 +24,7 @@ def py_make_scanner(context):  # pylint: disable=too-many-locals;
     memo = context.memo
 
     def _scan_once(string, idx, obj=None, lock=False, raw=False):
-        # pylint: disable=too-many-branches,too-many-return-statements, no-else-return
+        # pylint: disable=too-many-branches, too-many-return-statements, no-else-return
         try:
             nextchar = string[idx]
         except IndexError:
@@ -59,7 +59,7 @@ def py_make_scanner(context):  # pylint: disable=too-many-locals;
                 return string[idx : idx + 5], idx + 5
             return False, idx + 5
 
-        m = match_number(string, idx)
+        m = match_number(string, idx)  # pylint: disable=invalid-name
         if m is not None:
             integer, frac, exp = m.groups()
             if frac or exp:

@@ -24,7 +24,7 @@ check.add_argument(
 check.add_argument(
     "-i",
     action="store_true",
-    help="If specified, tests will continue on error! (NOT RECOMMENDED)"
+    help="If specified, tests will continue on error! (NOT RECOMMENDED)",
 )
 
 fmt = subparser.add_parser("fmt")
@@ -35,7 +35,7 @@ fmt.add_argument(
 fmt.add_argument(
     "-d",
     action="store_true",
-    help="Print out the diff instead of formatting the files."
+    help="Print out the diff instead of formatting the files.",
 )
 
 args = parser.parse_args()
@@ -49,7 +49,9 @@ def isrt():
 def f_isrt(diff=False):
     print("Checking imports with isort")
     iargs = ["./discpyth"]
-    iargs.append("--diff") if diff else None
+    iargs.append(  # pylint: disable=expression-not-assigned
+        "--diff"
+    ) if diff else None
     isort(argv=iargs)
 
 
@@ -58,7 +60,7 @@ def blk():
     maybe_install_uvloop()
     freeze_support()
     patch_click()
-    main(["--check", "./discpyth"])
+    main(["--check", "./discpyth"])  # pylint: disable=no-value-for-parameter
 
 
 def f_blk(diff=False):
@@ -67,8 +69,10 @@ def f_blk(diff=False):
     freeze_support()
     patch_click()
     bargs = ["./discpyth"]
-    bargs.append("--diff") if diff else None
-    main(bargs)
+    bargs.append(  # pylint: disable=expression-not-assigned
+        "--diff"
+    ) if diff else None
+    main(bargs)  # pylint: disable=no-value-for-parameter
 
 
 def plnt():
@@ -81,7 +85,7 @@ def flk():
     flk8.main(["./discpyth"])
 
 
-def mp():
+def mypy_():
     print("Checking typing with mypy")
     try:
         mypy(None, sys.stdout, sys.stderr, ["./discpyth"])
@@ -100,7 +104,7 @@ checkers = {
     "b": blk,
     "p": plnt,
     "f": flk,
-    "m": mp,
+    "m": mypy_,
 }
 
 names = {
@@ -116,17 +120,30 @@ formatters = {"i": f_isrt, "b": f_blk}
 if args.command == "check":
     todo = ["i", "b", "p", "f", "m"]
     skp = []
-    err = 0
+    EXIT_CODE = 0
     if args.s:
         for t in args.s.split(","):
-            skp.append(names[t])
-            todo.remove(t.strip())
-        print(f"Performing checks with following skipped,\n{', '.join(skp)}")
+            try:
+                tn = names[t]
+            except KeyError:
+                print(f"\u001b[38;5;9m[ ERROR ] No tool named {t}\u001b[0m")
+            else:
+                if t not in todo:
+                    todo.remove(t)
+                    skp.append(tn)
+        if len(skp) == 0:
+            print("Performing a full check.")
+        else:
+            print(
+                f"Performing checks with following skipped,\n{', '.join(skp)}"
+            )
     else:
         print("Performing a full check.")
     if args.i:
-        print("\u001b[38;5;208m[ WARNING ] Ignore mode is enabled, output logs may be hard to read\u001b[0m")
-    for tool in todo:
+        print(
+            "\u001b[38;5;208m[ WARNING ] Ignore mode is enabled, output logs may be hard to read\u001b[0m"
+        )
+    for idx, tool in enumerate(todo):
         try:
             checkers[tool]()
         except SystemExit as e:
@@ -134,13 +151,13 @@ if args.command == "check":
                 if not args.i:
                     print(f"An error occured while running {names[tool]}.")
                     raise
-                else:
-                    print(f"An error occured while running {names[tool]}, ignoring...")
-                    err = e.code
-            else:
-                pass
-    if args.i and err > 0:
-        sys.exit(err)
+                if not idx == len(todo) - 1:
+                    print(
+                        f"An error occured while running {names[tool]}, ignoring..."
+                    )
+                EXIT_CODE = e.code
+    if args.i:
+        sys.exit(EXIT_CODE)
 if args.command == "fmt":
     todo = ["i", "b"]
     if args.s:
@@ -155,5 +172,3 @@ if args.command == "fmt":
         except SystemExit as e:
             if e.code != 0:
                 raise
-            else:
-                pass

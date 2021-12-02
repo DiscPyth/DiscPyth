@@ -12,13 +12,10 @@ from typing import (  # type: ignore
     Set,
     Tuple,
     Type,
-    TypeVar,
     _AnnotatedAlias,
     _eval_type,
     _is_dunder,
 )
-
-T = TypeVar("T")
 
 
 class AttributeData(NamedTuple):
@@ -44,7 +41,6 @@ class StructMeta(type):
     Never use this class directly as `Name(metaclass=fur_json.struct.StructMeta)`,
     instead use `Name(fur_json.Struct)`.\
     This metaclass does the following
-    - Create :meth:`__init__` method for the class.
     - Add attributes to `__slots__`.
     - Create necessary "mappings" for the decoder and encoder to work
     properly with the class.

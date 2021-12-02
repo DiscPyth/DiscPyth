@@ -19,7 +19,7 @@ NaN = float("nan")
 PosInf = float("inf")
 NegInf = float("-inf")
 
-S = TypeVar("S", bound=Type[Struct])
+S = TypeVar("S", bound=Type[Struct])  # pylint: disable=invalid-name
 
 
 class JSONDecodeError(ValueError):
@@ -37,7 +37,7 @@ class JSONDecodeError(ValueError):
     def __init__(self, msg, doc, pos) -> None:
         lineno = doc.count("\n", 0, pos) + 1
         colno = pos - doc.rfind("\n", 0, pos)
-        errmsg = "%s: line %d column %d (char %d)" % (msg, lineno, colno, pos)
+        errmsg = f"{msg:s}: line {lineno:d} column {colno:d} (char {pos:d})"
         ValueError.__init__(self, errmsg)
         self.msg = msg
         self.doc = doc
@@ -69,7 +69,7 @@ BACKSLASH = {
 }
 
 
-def _decode_uXXXX(s, pos) -> int:  # noqa: N802
+def _decode_uXXXX(s, pos) -> int:  # noqa: N802  # pylint: disable=invalid-name
     esc = s[pos + 1 : pos + 5]
     if len(esc) == 4 and esc[1] not in "xX":
         try:
@@ -80,7 +80,7 @@ def _decode_uXXXX(s, pos) -> int:  # noqa: N802
     raise JSONDecodeError(msg, s, pos)
 
 
-def py_scanstring(  # pylint: disable=dangerous-default-value, too-many-branches;
+def py_scanstring(  # pylint: disable=dangerous-default-value, too-many-branches, invalid-name;
     s, end, strict=True, _b=BACKSLASH, _m=STRINGCHUNK.match
 ) -> Tuple[str, int]:
     """Scan the string s for a JSON string. End is the index of the
@@ -110,7 +110,7 @@ def py_scanstring(  # pylint: disable=dangerous-default-value, too-many-branches
         elif terminator != "\\":
             if strict:  # pylint: disable=no-else-raise
                 # msg = "Invalid control character %r at" % (terminator,)
-                msg = "Invalid control character {0!r} at".format(terminator)
+                msg = f"Invalid control character {terminator!r} at"
                 raise JSONDecodeError(msg, s, end)
             else:
                 _append(terminator)
@@ -126,7 +126,7 @@ def py_scanstring(  # pylint: disable=dangerous-default-value, too-many-branches
             try:
                 char = _b[esc]
             except KeyError:
-                msg = "Invalid \\escape: {0!r}".format(esc)
+                msg = f"Invalid \\escape: {esc!r}"
                 raise JSONDecodeError(  # pylint: disable=raise-missing-from
                     msg, s, end
                 )
@@ -151,7 +151,7 @@ WHITESPACE = re.compile(r"[ \t\n\r]*", FLAGS)
 WHITESPACE_STR = " \t\n\r"
 
 
-def JSONObject(  # pylint: disable=too-many-arguments, too-many-locals, too-many-branches; # noqa: N802
+def JSONObject(  # pylint: disable=too-many-arguments, too-many-locals, too-many-branches, invalid-name; # noqa: N802
     s_and_end,
     strict,
     scan_once,
@@ -171,7 +171,7 @@ def JSONObject(  # pylint: disable=too-many-arguments, too-many-locals, too-many
         else:
             object_ = object_()  # type: ignore
     s, end = s_and_end
-    i_end = end-1
+    i_end = end - 1
     pairs: Union[List[Any], Dict[Any, Any], S, str] = []
     pairs_append = pairs.append  # type: ignore
     # Backwards compatibility
@@ -226,7 +226,9 @@ def JSONObject(  # pylint: disable=too-many-arguments, too-many-locals, too-many
 
         try:
             if not raw:
-                value, end = scan_once(s, end, field.object, field.lock, field.raw)
+                value, end = scan_once(
+                    s, end, field.object, field.lock, field.raw
+                )
             else:
                 _, end = scan_once(s, end, None, False, True)
         except StopIteration as err:
@@ -235,7 +237,11 @@ def JSONObject(  # pylint: disable=too-many-arguments, too-many-locals, too-many
             if object_ is not None:
                 try:
                     if field.hook is not None and callable(field.hook):
-                        setattr(object_, object_.__mapping__[1][key], field.hook(value))
+                        setattr(
+                            object_,
+                            object_.__mapping__[1][key],
+                            field.hook(value),
+                        )
                     else:
                         setattr(object_, object_.__mapping__[1][key], value)
                 except KeyError:
@@ -277,7 +283,7 @@ def JSONObject(  # pylint: disable=too-many-arguments, too-many-locals, too-many
     return pairs, end
 
 
-def JSONArray(  # noqa: N802
+def JSONArray(  # noqa: N802  # pylint: disable=invalid-name, too-many-branches
     s_and_end,
     scan_once,
     object_: S,
@@ -287,7 +293,7 @@ def JSONArray(  # noqa: N802
     _ws=WHITESPACE_STR,
 ):
     s, end = s_and_end
-    i_end = end-1
+    i_end = end - 1
     values: List[Any] = []
     nextchar = s[end : end + 1]
     if nextchar in _ws:
@@ -367,7 +373,7 @@ class JSONDecoder:  # pylint: disable=too-many-instance-attributes;
         parse_int=None,
         parse_constant=None,
         strict=True,
-        object_pairs_hook=None
+        object_pairs_hook=None,
     ) -> None:
         r"""``object_hook``, if specified, will be called with the result
         of every JSON object decoded and its return value will be used in
@@ -413,7 +419,7 @@ class JSONDecoder:  # pylint: disable=too-many-instance-attributes;
         self.memo: Dict[Any, Any] = {}
         self.scan_once = scanner.make_scanner(self)
 
-    def decode(
+    def decode(  # pylint: disable=invalid-name
         self, s, object_: S, lock=False, _w=WHITESPACE.match
     ):
         r"""Return the Python representation of ``s`` (a ``str`` instance
@@ -434,7 +440,7 @@ class JSONDecoder:  # pylint: disable=too-many-instance-attributes;
             raise JSONDecodeError("Extra data", s, end)
         return obj
 
-    def raw_decode(
+    def raw_decode(  # pylint: disable=invalid-name
         self, s, object_: S, lock=False, idx=0
     ):
         r"""Decode a JSON document from ``s`` (a ``str`` beginning with
