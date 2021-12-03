@@ -64,7 +64,7 @@ body:
       options:
         - label: >-
             By contributing, you agree that your contributions will be licensed
-            under its MIT License.
+            under its BSD 3-Clause License.
           required: true
         - label: Contribution Guidelines
           required: true
