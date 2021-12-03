@@ -16,6 +16,6 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install black isort pylint flake8 mypy aiohttp
+        pip install black isort pylint flake8 mypy wsproto anyio curio httpx
     - name: Perform checks
       run: python ./dutils.py check -i

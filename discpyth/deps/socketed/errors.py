@@ -16,14 +16,15 @@ class ConnectionClosed(Exception):
         `reason (Optional[str])`: The reason of the close.
     """
 
-    def __init__(self,
+    def __init__(
+        self,
         data: Optional[bytes],
         code: Optional[int] = None,
-        reason: Optional[str] = None\
+        reason: Optional[str] = None,
     ) -> None:
         super().__init__(
             f"{code if code is not None else ''}{' - '+reason if reason is not None else ''}"
-            )
+        )
 
         self.code = code
         self.reason = reason

@@ -186,8 +186,8 @@ class ProtoManager:
                 else:
                     raise ConnectionClosed(
                         self._proto.send(event.response()),
-                        code = event.code,
-                        reason = event.reason,
+                        code=event.code,
+                        reason=event.reason,
                     )
             elif isinstance(event, TextMessage):
                 self._text_buffer += event.data

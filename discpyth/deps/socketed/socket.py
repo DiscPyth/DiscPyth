@@ -17,14 +17,14 @@ else:
     ANY_IO_AVAILABLE = True
 
 try:
-    from curio import open_connection
-    from curio.io import Socket
+    from curio import open_connection  # type: ignore
+    from curio.io import Socket  # type: ignore
 except ImportError:
     CURIO_AVAILABLE = False
 else:
     CURIO_AVAILABLE = True
 
-from wsproto.events import BytesMessage, Event, TextMessage
+from wsproto.events import BytesMessage, TextMessage
 
 from .errors import ConnectionClosed
 from .proto import ProtoManager
@@ -39,7 +39,7 @@ class WebSocketManager:
     """`anyio`/`curio` implementation of `discpyth.socketed.proto.ProtoManager`.
 
     Parameters:
-        `backend (Literal["asyncio", "trio", "curio"])`: The async 
+        `backend (Literal["asyncio", "trio", "curio"])`: The async
         backend to use. must be one of `'asyncio'`, `'trio'`, `'curio'`.
 
     Attributes:
@@ -94,7 +94,9 @@ class WebSocketManager:
             )
             await self._socket.send(conn_payload)
         else:
-            self._socket = await open_connection(*self._proto.destination, ssl=True)
+            self._socket = await open_connection(
+                *self._proto.destination, ssl=True
+            )
             self._socket._socket.__enter__()
             await self._socket.sendall(conn_payload)
         return self
@@ -106,9 +108,15 @@ class WebSocketManager:
         msg: Tuple[MessageType, Optional[PingType]] = None  # type: ignore
 
         while (
-            msg is None or msg[0].type is _MISSING  # pylint: disable=unsubscriptable-object
+            msg is None
+            or msg[0].type  # pylint: disable=unsubscriptable-object
+            is _MISSING
         ):
-            msg = self._proto.receive(await self._socket.receive()) if self._backend == "anyio" else self._proto.receive(await self._socket.recv(65536))
+            msg = (
+                self._proto.receive(await self._socket.receive())
+                if self._backend == "anyio"
+                else self._proto.receive(await self._socket.recv(65536))  # type: ignore
+            )
 
         if isinstance(msg[1], PingType):
             await self._socket.send(msg[1].data)  # type: ignore
@@ -151,12 +159,12 @@ class WebSocketManager:
                     await self._socket.send(close_payload)
                     try:
                         while True:
-                            self._proto.receive(await self._socket.recv(65536))
+                            self._proto.receive(await self._socket.recv(65536))  # type: ignore
                     except ConnectionClosed as conn_closed:
                         if conn_closed.data is not None:
                             await self._socket.send(conn_closed.data)
                 finally:
-                    await self._socket.close()
+                    await self._socket.close()  # type: ignore
 
     async def __aenter__(self) -> WebSocketManager:
         return self
