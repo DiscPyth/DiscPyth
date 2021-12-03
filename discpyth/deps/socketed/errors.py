@@ -1,6 +1,6 @@
 """Error related to the websocket reside here."""
 
-from typing import Optional, List, Tuple
+from typing import List, Optional, Tuple
 
 from wsproto.events import RejectConnection
 
@@ -12,10 +12,21 @@ class ConnectionClosed(Exception):
 
     Attributes:
         `data (Optional[bytes])`: The Pong paylod to send to the websocket.
+        `code (Optional[int])`: The code close.
+        `reason (Optional[str])`: The reason of the close.
     """
 
-    def __init__(self, data: Optional[bytes]) -> None:
-        super().__init__()
+    def __init__(self,
+        data: Optional[bytes],
+        code: Optional[int] = None,
+        reason: Optional[str] = None\
+    ) -> None:
+        super().__init__(
+            f"{code if code is not None else ''}{' - '+reason if reason is not None else ''}"
+            )
+
+        self.code = code
+        self.reason = reason
 
         self.data = data
 

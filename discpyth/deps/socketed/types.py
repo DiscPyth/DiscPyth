@@ -12,6 +12,7 @@ class Payload:
     Attributes:
         `data (Union[str, bytes, None])`: The payload data.
     """
+
     def __init__(self, data: Union[str, bytes, None]):
         self.data = data
 
@@ -26,6 +27,7 @@ class Ping(Payload):
     Attributes:
         `data (wsproto.events.Pong)`: The data to send in response to Ping.
     """
+
     def __init__(self, to_send: bytes):
         super().__init__(to_send)
 
@@ -44,7 +46,10 @@ class Message(Payload):
         `data (Union[str, bytes, None])`: The data of the message.
         `type (str)`: The type of the message.
     """
-    def __init__(self, data: Union[bytes, str, None], _type: Union[str, Type[_MISSING]]):
+
+    def __init__(
+        self, data: Union[bytes, str, None], _type: Union[str, Type[_MISSING]]
+    ):
         super().__init__(data)
         self.type = _type
 

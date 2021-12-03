@@ -184,7 +184,11 @@ class ProtoManager:
                 if self._proto.state == ConnectionState.CLOSED:
                     raise ConnectionClosed(None)
                 else:
-                    raise ConnectionClosed(self._proto.send(event.response()))
+                    raise ConnectionClosed(
+                        self._proto.send(event.response()),
+                        code = event.code,
+                        reason = event.reason,
+                    )
             elif isinstance(event, TextMessage):
                 self._text_buffer += event.data
                 if not event.message_finished:

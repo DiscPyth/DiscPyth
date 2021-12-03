@@ -2,7 +2,7 @@
 discord-gateway is a Sans-I/O implementation of the Discord gateway/websocket.
 
 Socketed changes the way how data is handled in discord-gateway and provides,
-a simplified interface for interacting with websockets using anyio.
+a simplified interface for interacting with websockets using anyio and curio
 
 Copyrights: Bluenix2 <bluenixdev@gmail.com>
 
