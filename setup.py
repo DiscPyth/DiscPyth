@@ -46,7 +46,11 @@ setup(
     ],
     packages=find_packages(where="discpyth"),
     python_requires=">=3.8",
+<<<<<<< HEAD
     install_requires=["aiohttp"],
+=======
+    install_requires=["aiohttp", "wsproto", "httpx", "anyio"],
+>>>>>>> force push cus i f-ed up aup git in all of my projects
     extras_require=e_require,
     project_urls={
         "Source": "https://github.com/DiscPyth/DiscPyth/",

@@ -6,7 +6,11 @@ file to see the implementation specifics to implment it in other frameworks.
 from __future__ import annotations
 
 from typing import Optional, Tuple, Union
+<<<<<<< HEAD
 
+=======
+from socket import SHUT_WR
+>>>>>>> force push cus i f-ed up aup git in all of my projects
 try:
     import anyio
     from anyio import connect_tcp
@@ -90,6 +94,7 @@ class AnyIOWebSocketManager(BaseWSManager):
         """Receive messages from the websocket server wrapped in a
         `discpyth.socketed.types.Message` instance.
         """
+<<<<<<< HEAD
         msg: Tuple[MessageType, Optional[PingType]] = None  # type: ignore
 
         while (
@@ -101,6 +106,15 @@ class AnyIOWebSocketManager(BaseWSManager):
 
         if isinstance(msg[1], PingType):
             await self._socket.send(msg[1].data)  # type: ignore
+=======
+        msg: Tuple[MessageType, Optional[PingType]] = self._proto.receive(await self._socket.receive())
+
+        while (msg[0].type is _MISSING):
+            msg = self._proto.receive(await self._socket.receive())
+
+            if isinstance(msg[1], PingType):
+                await self._socket.send(msg[1].data)  # type: ignore
+>>>>>>> force push cus i f-ed up aup git in all of my projects
 
         return msg[0]
 
@@ -160,6 +174,7 @@ class CurIOWebSocketManager(BaseWSManager):
         """Receive messages from the websocket server wrapped in a
         `discpyth.socketed.types.Message` instance.
         """
+<<<<<<< HEAD
         msg: Tuple[MessageType, Optional[PingType]] = None  # type: ignore
 
         while (
@@ -171,6 +186,15 @@ class CurIOWebSocketManager(BaseWSManager):
 
         if isinstance(msg[1], PingType):
             await self._socket.send(msg[1].data)  # type: ignore
+=======
+        msg: Tuple[MessageType, Optional[PingType]] = self._proto.receive(await self._socket.recv(65536))
+
+        while (msg[0].type is _MISSING):
+            msg = self._proto.receive(await self._socket.recv(65536))
+
+            if isinstance(msg[1], PingType):
+                await self._socket.send(msg[1].data)  # type: ignore
+>>>>>>> force push cus i f-ed up aup git in all of my projects
 
         return msg[0]
 
@@ -201,4 +225,15 @@ class CurIOWebSocketManager(BaseWSManager):
                     if conn_closed.data is not None:
                         await self._socket.send(conn_closed.data)
             finally:
+<<<<<<< HEAD
+=======
+                await self._socket.shutdown(SHUT_WR)
+                # Since curio is very similar to the normal socket module
+                # or I should say, its just the normal socket module with
+                # async support, so I'm gonna pull a copy-paste move and
+                # trust Bluenix on this one.
+                recv = None
+                while recv != b"":
+                    recv = await self._socket.recv(65536)
+>>>>>>> force push cus i f-ed up aup git in all of my projects
                 await self._socket.close()  # type: ignore

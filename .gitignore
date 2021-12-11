@@ -1,4 +1,8 @@
 *test.py
+<<<<<<< HEAD
+=======
+!tests/*test.py
+>>>>>>> force push cus i f-ed up aup git in all of my projects
 __pycache__
 dist/
 *.egg-info/
