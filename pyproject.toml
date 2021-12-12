@@ -28,14 +28,9 @@ classifiers = [
 
 # Requirements
 [dependencies]
-<<<<<<< HEAD
-aiohttp = "*"
-go-json = ">=0.3.7.post3"
-=======
 anyio = "*"
 httpx = "*"
 wsproto = "*"
->>>>>>> force push cus i f-ed up aup git in all of my projects
 
 [dev-dependencies]
 black = "*"

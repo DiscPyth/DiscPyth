@@ -39,30 +39,7 @@ report is valid, you are recommended to ask for help on the [support server](htt
 
 ## Contibution tips
 
-- \* The code follows the [`black`](https://github.com/psf/black) formatting style, and so should you in your fixes. We also make use of [`isort`](https://github.com/pycqa/isort/) for sorting imports make sure to use it before opening a pull request!
-  - To format your changes simply run the following
-
-```bash
-$ python ./dutils.py fmt
-# dutils.py has a shebang you may run `chmod +x ./dutils.py`
-# and then you can easily run `./dutils.py fmt`
-```
-
-```console
-py ./dutils.py fmt
-```
-
-- Make sure to run `dutils.py check` to run `isort`, `black`,
-  [`pylint`](https://github.com/PyCQA/pylint), [`flake8`](https://github.com/PyCQA/flake8)
-  and [`mypy`](https://github.com/python/mypy) to check for some problems.
-
-- If you are fixing whitespaces (it's an unwanted fix) you must either add it in a valid/wanted fix or completely ignore it.
-
-- Before modifing/enhancing the code structure you must discuss it first.
-
-- \* Follow the naming convention properly.
-
-\* - Required when contributing.
+You are supposed to properly read the [guidelines](../GUIDELINES.md) before contriubuting.
 
 ## Licence
 

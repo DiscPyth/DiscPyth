@@ -1,6 +1,6 @@
 import time
 import zlib
-from typing import Set, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING, Set, Union
 
 from .deps.socketed import (
     AnyIOWebSocketManager,
@@ -16,12 +16,14 @@ if ANY_IO_AVAILABLE:
 
 if CURIO_AVAILABLE:
     from curio import Lock as Curio_Lock
+
     # from curio import Task as Curio_Task
 
 if TYPE_CHECKING:
     from .discpyth import Session
 
 ZLIB_SUFFIX = b"\x00\x00\xff\xff"
+
 
 class BaseShard:
     __slots__ = {

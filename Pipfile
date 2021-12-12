@@ -7,6 +7,7 @@ name = "pypi"
 anyio = "*"
 curio = "*"
 httpx = "*"
+wsproto = "*"
 
 [dev-packages]
 pylint = "*"

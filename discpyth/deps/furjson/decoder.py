@@ -3,7 +3,7 @@
 import re
 
 from . import scanner
-from .nameddict import is_named_dict_class, _get_key_config
+from .nameddict import _get_key_config, is_named_dict_class
 
 try:
     from _json import scanstring as c_scanstring
@@ -165,9 +165,7 @@ def JSONObject(  # pylint: disable=invalid-name
     else:
         obj = None
         pairs = []
-        pairs_append = lambda *args: pairs.append(  # noqa: E731
-            args
-        )
+        pairs_append = lambda *args: pairs.append(args)  # noqa: E731
     # Backwards compatibility
     if memo is None:
         memo = {}

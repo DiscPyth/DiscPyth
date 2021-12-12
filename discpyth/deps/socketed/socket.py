@@ -5,8 +5,8 @@ file to see the implementation specifics to implment it in other frameworks.
 
 from __future__ import annotations
 
-from typing import Optional, Tuple, Union
 from socket import SHUT_WR
+from typing import Optional, Tuple, Union
 
 try:
     import anyio
@@ -91,9 +91,11 @@ class AnyIOWebSocketManager(BaseWSManager):
         """Receive messages from the websocket server wrapped in a
         `discpyth.socketed.types.Message` instance.
         """
-        msg: Tuple[MessageType, Optional[PingType]] = self._proto.receive(await self._socket.receive())
+        msg: Tuple[MessageType, Optional[PingType]] = self._proto.receive(
+            await self._socket.receive()
+        )
 
-        while (msg[0].type is _MISSING):
+        while msg[0].type is _MISSING:
             msg = self._proto.receive(await self._socket.receive())
 
             if isinstance(msg[1], PingType):
@@ -157,9 +159,11 @@ class CurIOWebSocketManager(BaseWSManager):
         """Receive messages from the websocket server wrapped in a
         `discpyth.socketed.types.Message` instance.
         """
-        msg: Tuple[MessageType, Optional[PingType]] = self._proto.receive(await self._socket.recv(65536))
+        msg: Tuple[MessageType, Optional[PingType]] = self._proto.receive(
+            await self._socket.recv(65536)
+        )
 
-        while (msg[0].type is _MISSING):
+        while msg[0].type is _MISSING:
             msg = self._proto.receive(await self._socket.recv(65536))
 
             if isinstance(msg[1], PingType):

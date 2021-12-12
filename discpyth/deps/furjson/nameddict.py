@@ -7,9 +7,9 @@ from typing import (
     Any,
     Callable,
     Dict,
+    NamedTuple,
     Optional,
     Set,
-    NamedTuple,
     Union,
     get_origin,
 )
@@ -17,7 +17,7 @@ from typing import (
 
 class JSONConfig(NamedTuple):
     name: Optional[str] = None
-    object: Union[NamedDict, NamedDictMeta] = None
+    object: Union[NamedDict, NamedDictMeta, None] = None
 
     optional: bool = False
     raw: bool = False
@@ -63,7 +63,7 @@ class NamedDict(dict):
 
     __slots__: Set[str] = set()
     __mapping__: Dict[str, JSONConfig]
-    __names__: Set[str]
+    __names__: Dict[str, str]
 
     def __init__(self, **kwargs):
         if hasattr(self, "__names__"):
@@ -109,7 +109,7 @@ class NamedDictMeta(type):
     def __new__(cls, name: str, bases: tuple, namespace: dict) -> NamedDict:  # type: ignore
 
         namespace["__slots__"] = set()
-        namespace["__names__"] = set()
+        namespace["__names__"] = {}
         namespace["__mapping__"] = {}
 
         try:
@@ -152,7 +152,7 @@ class NamedDictMeta(type):
                     _config = _config._replace(**update)  # type: ignore
 
             namespace["__mapping__"][_config.name] = _config
-            namespace["__names__"].add(attribute)
+            namespace["__names__"][attribute] = _config.name
 
         return type.__new__(NamedDictMeta, name, bases, namespace)  # type: ignore
 

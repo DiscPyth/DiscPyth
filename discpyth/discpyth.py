@@ -1,9 +1,9 @@
 import logging
 
-from .utils import WrappedLogger
 from . import __author__, __url__, __version__
-from .wsapi import WSSession
 from .deps.socketed.socket import ANY_IO_AVAILABLE, CURIO_AVAILABLE
+from .utils import WrappedLogger
+from .wsapi import WSSession
 
 if ANY_IO_AVAILABLE:
     from anyio import run as anyio_run
