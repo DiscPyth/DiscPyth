@@ -26,13 +26,20 @@
 
 - The docstrings format is:
 
-```
+```py
+"""
 [ summary ]
 
-`Arguments`:
+# And optionally Attributes if its a
+# class docstring or something
+
+Attributes:
+    `attribute_name (attribute_type)`: [ summary ]
+
+Arguments:
     `argument_name (argument_type)`: [ summary ]
 
-`Keyword Arguments`:
+Keyword Arguments:
     `argument_name (argument_type)`: [ summary ]
 
     # If keyword arguments are defined with ** then
@@ -40,9 +47,10 @@
     `name_of_the_**_argument`:
         `names_of_possible_accepted_arguments (type_of_those_arguments)`: [ summary ]
 
-`Raises`:
+Raises:
     `whatever_it_raises`: [ summary of "why?" ]
 
-`Returns`:
+Returns:
     `whatever_it_returns`: [ some short summary ]
+"""
 ```
