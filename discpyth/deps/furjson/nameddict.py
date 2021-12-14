@@ -101,6 +101,16 @@ class NamedDict(dict):
     def __repr__(self) -> str:
         return f"{self.__class__.__qualname__} {super().__repr__()}"
 
+    def items(self):
+        d_items = list(super().items())
+        for pos, (key, value) in enumerate(d_items):
+            conf = self.__mapping__[self.__names__[key]]
+            if conf.optional and not value:
+                d_items.pop(pos)
+            if conf.dump_hook is not None:
+                d_items[pos] = (key, conf.dump_hook(value))
+        return d_items
+
 
 _empty_config = JSONConfig()
 
@@ -148,6 +158,10 @@ class NamedDictMeta(type):
                         metadata.dump_hook
                     ):
                         update["dump_hook"] = metadata.dump_hook
+                    if metadata.object is not None and callable(
+                        metadata.object
+                    ):
+                        update["object"] = metadata.object
 
                     _config = _config._replace(**update)  # type: ignore
 
