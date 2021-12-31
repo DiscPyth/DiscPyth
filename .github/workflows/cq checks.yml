@@ -19,6 +19,10 @@ jobs:
         curl -sSL https://install.python-poetry.org | POETRY_HOME=$HOME/poetry python3 -
         $HOME/poetry/bin/poetry install
     - name: Checking formatting
-      run: $HOME/poetry/bin/poetry run poe check
+      run: |
+      export PATH = "$HOME/poetry:$PATH"
+      $HOME/poetry/bin/poetry run poe check
     - name: Checking typing
-      run: $HOME/poetry/bin/poetry run poe pyright
+      run: |
+      export PATH = "$HOME/poetry:$PATH"
+      $HOME/poetry/bin/poetry run poe pyright
