@@ -1,3 +1,35 @@
+<<<<<<< HEAD
+__all__ = (
+    "Struct",
+    "StructMeta",
+    "JSONConfig",
+    "is_struct",
+    "decoder",
+    "encoder",
+    "loads",
+    "dumps",
+)
+
+import json
+import re
+from json import JSONDecodeError, JSONDecoder, JSONEncoder
+from json.decoder import WHITESPACE, WHITESPACE_STR, scanstring  # type: ignore
+
+from .structs import (
+    JSONConfig,
+    Struct,
+    StructMeta,
+    _get_key_config,
+    is_struct,
+    is_struct_class,
+)
+
+NUMBER_RE = re.compile(
+    r"(-?(?:0|[1-9]\d*))(\.\d+)?([eE][-+]?\d+)?",
+    (re.VERBOSE | re.MULTILINE | re.DOTALL),
+)
+
+=======
 __all__ = ("NamedDict", "NamedDictMeta", "JSONConfig", "decoder")
 
 import json
@@ -18,6 +50,7 @@ NUMBER_RE = re.compile(
     (re.VERBOSE | re.MULTILINE | re.DOTALL),
 )
 
+>>>>>>> 157769adb70933aacc5a16b0bdd0b46520903aff
 
 # -------
 # SCANNER
@@ -89,6 +122,12 @@ def scanner(context):
     return scan_once
 
 
+<<<<<<< HEAD
+# -------------
+# DESERIALIZERS
+# -------------
+=======
+>>>>>>> 157769adb70933aacc5a16b0bdd0b46520903aff
 def JSONObject(  # pylint: disable=invalid-name;
     s_and_end,
     strict,
@@ -103,11 +142,17 @@ def JSONObject(  # pylint: disable=invalid-name;
 ):
     s, end = s_and_end  # pylint: disable=invalid-name
     if not raw:
+<<<<<<< HEAD
+        if obj is not None and is_struct_class(obj):
+            pairs = obj()
+            pairs_append = lambda n_and_v: pairs.__setattr__(*n_and_v)  # noqa: E731
+=======
         if obj is not None and is_named_dict_class(obj):
             pairs = obj()
             pairs_append = lambda n_and_v: pairs.__setattr__(  # noqa: E731
                 *n_and_v
             )
+>>>>>>> 157769adb70933aacc5a16b0bdd0b46520903aff
         else:
             obj = None
             pairs = []
@@ -272,9 +317,13 @@ class FurJSON(JSONDecoder):
             raise JSONDecodeError("Extra data", s, end)
         return obj_
 
+<<<<<<< HEAD
+    def raw_decode(self, s, obj=None, idx=0):  # pylint: disable=arguments-differ
+=======
     def raw_decode(
         self, s, obj=None, idx=0
     ):  # pylint: disable=arguments-differ
+>>>>>>> 157769adb70933aacc5a16b0bdd0b46520903aff
         """Decode a JSON document from ``s`` (a ``str`` beginning with
         a JSON document) and return a 2-tuple of the Python
         representation and the index in ``s`` where the document ended.
@@ -289,7 +338,11 @@ class FurJSON(JSONDecoder):
 
 
 decoder = FurJSON()
+<<<<<<< HEAD
+encoder: JSONEncoder = json.JSONEncoder()
+=======
 encoder: JSONEncoder = json._default_encoder  # type: ignore # pylint: disable=protected-access
+>>>>>>> 157769adb70933aacc5a16b0bdd0b46520903aff
 
 loads = decoder.decode
 dumps = encoder.encode

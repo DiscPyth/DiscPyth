@@ -16,6 +16,9 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install black isort pylint flake8 mypy wsproto anyio curio httpx
-    - name: Perform checks
-      run: python ./dutils.py check -i
+        curl -sSL https://install.python-poetry.org | POETRY_HOME=/etc/poetry python3 -
+        /etc/poetry/bin/poetry install
+    - name: Checking formatting
+      run: /etc/poetry/bin/poetry run poe check
+    - name: Checking typing
+      run: /etc/poetry/bin/poetry run poe pyright

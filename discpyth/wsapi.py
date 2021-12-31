@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import time
 import zlib
 from typing import TYPE_CHECKING, Set, Union
@@ -86,9 +88,13 @@ class AnyIOShard(BaseShard):
         pass
 
 
-# Curio TBD
+class CurioShard(BaseShard):
+    pass
 
 
 class WSSession(EventSession):
 
     __slots__: Set[str] = set()
+
+    async def open_shards(self):
+        pass

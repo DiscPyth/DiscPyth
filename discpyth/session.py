@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from httpx import AsyncClient
 
     from .state import State
-    from .wsapi import Shard
+    from .wsapi import AnyIOShard, CurioShard
 
 
 class BaseSession:
@@ -37,6 +37,6 @@ class BaseSession:
     _backend: str
     _gateway: None
     _client: AsyncClient
-    _shards: Dict[int, Shard]
+    _shards: Dict[int, Union[AnyIOShard, CurioShard]]
     _shard_id: Union[int, Sequence[int]]
     _shard_count: int

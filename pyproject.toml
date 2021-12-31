@@ -1,68 +1,52 @@
-[project]
+[tool.poetry]
 name = "discpyth"
 version = "0.1.0"
-description = "DiscPyth is an unofficial wrapper in python for the official Discord API."
-authors = [
-    "arHSM <hanseungmin.ar@gmail.com>"
-]
-license = "MIT"
-readme = "README.md"
-python = "^3.6"
-homepage = "https://github.com/DiscPyth/DiscPyth"
-repository = "https://github.com/DiscPyth/DiscPyth"
-#documentation = "https://github.com/DiscPyth/DiscPyth"
+description = "DiscPyth is an unofficial wrapper in Python for the official Discord API."
+authors = ["arHSM <hanseungmin.ar@gmail.com>"]
+license = "BSD-3-Clause License"
 
+[tool.poetry.dependencies]
+python = "^3.10"
+wsproto = "^1.0.0"
+httpx = "^0.21.1"
+anyio = "^3.4.0"
+curio = "^1.5"
 
-keywords = ["discord", "discord-api", "discord-bot", "REST", "websocket"]
-
-classifiers = [
-    "Development Status :: 4 - Beta",
-    "Intended Audience :: Developers",
-    "Topic :: Communications :: Chat",
-    'Topic :: Internet',
-    'Topic :: Software Development :: Libraries',
-    'Topic :: Software Development :: Libraries :: Python Modules',
-    'Topic :: Utilities',
-    "License :: OSI Approved :: MIT License",
-]
-
-# Requirements
-[dependencies]
-anyio = "*"
-httpx = "*"
-wsproto = "*"
-
-[dev-dependencies]
-black = "*"
-isort="*"
-pylint = "*"
-flake8 = "*"
-mypy = "*"
-
-[tool.black]
-line-length = 79
-
-[tool.isort]
-profile = 'black'
-
-[tool.pylint.messages_control]
-# C0330: Wrong hanging indentation before block (add 4 spaces)
-# C0326: Bad whitespace
-# C0301: Line too long
-# R0903: Too few public methods (n/2)
-# W1203: logging-fstring-interpolation
-# C0116: Missing function or method docstring
-# C0115: Missing class docstring
-# C0114: Missing module docstring
-# W0511: TODO warnings, (fix-me)
-disable = "C0330, C0326, C0301, R0903, W1203, C0116, C0115, C0114, W0511"
-
-[tool.pylint.format]
-max-line-length = "79"
+[tool.poetry.dev-dependencies]
+black = "^21.12b0"
+isort = "^5.10.1"
+pyright = "^0.0.13"
+poethepoet = "^0.11.0"
 
 [build-system]
-requires = [
-    "setuptools>=42",
-    "wheel"
-]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = "black"
+
+[tool.poe.tasks]
+    [tool.poe.tasks.fmt]
+    help = "Format code with `black` and `isort`."
+    sequence = [
+        {cmd = "isort ./discpyth"},
+        {cmd = "black ./discpyth"}
+    ]
+
+    [tool.poe.tasks.check]
+    help = "Check formatting."
+    sequence = [
+        {cmd = "isort ./discpyth --check"},
+        {cmd = "black ./discpyth --check"}
+    ]
+
+    [tool.poe.tasks.check_diff]
+    help = "Check formatting, and print out the diff."
+    sequence = [
+        {cmd = "isort ./discpyth --check --diff"},
+        {cmd = "black ./discpyth --check --diff"}
+    ]
+
+    [tool.poe.tasks.pyright]
+    help = "Run pyright."
+    cmd = "pyright ./discpyth --lib --warnings"

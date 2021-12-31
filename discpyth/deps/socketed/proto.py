@@ -134,9 +134,7 @@ class ProtoManager:
         """
         return self._proto.send(CloseConnection(code))
 
-    def receive(
-        self, data: Optional[bytes]
-    ) -> Tuple[MessageType, Optional[PingType]]:
+    def receive(self, data: Optional[bytes]) -> Tuple[MessageType, Optional[PingType]]:
         """Returns a tuple of `discpyth.socketed.types.Message` and
         optionally `discpyth.socketed.types.Ping`.
 

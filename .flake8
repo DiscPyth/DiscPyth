@@ -1,7 +1,0 @@
-[flake8]
-max-line-length = 79
-# E203: whitespace before ‘:’
-# E501: line too long
-# E302: expected 2 blank lines, found 0
-# W503: line break before binary operator
-extend-ignore = E203, E501, E302, W503

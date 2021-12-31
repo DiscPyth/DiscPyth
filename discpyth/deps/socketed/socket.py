@@ -148,9 +148,7 @@ class CurIOWebSocketManager(BaseWSManager):
     async def connect(self, url) -> CurIOWebSocketManager:
         """Connect to a websocket server at `url`."""
         conn_payload = self._proto.connect(url)
-        self._socket = await open_connection(
-            *self._proto.destination, ssl=True
-        )
+        self._socket = await open_connection(*self._proto.destination, ssl=True)
         await self._socket.__aenter__()
         await self._socket.sendall(conn_payload)
         return self
