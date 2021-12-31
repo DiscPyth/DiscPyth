@@ -16,9 +16,9 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        curl -sSL https://install.python-poetry.org | POETRY_HOME=/etc/poetry python3 -
-        /etc/poetry/bin/poetry install
+        curl -sSL https://install.python-poetry.org | POETRY_HOME=$HOME/poetry python3 -
+        $HOME/poetry/bin/poetry install
     - name: Checking formatting
-      run: /etc/poetry/bin/poetry run poe check
+      run: $HOME/poetry/bin/poetry run poe check
     - name: Checking typing
-      run: /etc/poetry/bin/poetry run poe pyright
+      run: $HOME/poetry/bin/poetry run poe pyright
