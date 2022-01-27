@@ -8,7 +8,7 @@ license = "BSD-3-Clause License"
 [tool.poetry.dependencies]
 python = "^3.10"
 wsproto = "^1.0.0"
-httpx = "^0.21.1"
+httpx = "^0.22.0"
 anyio = "^3.4.0"
 curio = "^1.5"
 
