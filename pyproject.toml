@@ -19,7 +19,7 @@ colorama = "^0.4.4"
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"
 isort = "^5.10.1"
-pyright = "^0.0.13"
+pyright = "^1.1.227"
 
 [tool.poetry.extras]
 anyio = ["anyio"]
