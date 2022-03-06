@@ -1,6 +1,6 @@
 *test.py
+tests/
 __pycache__
 dist/
-*.egg-info/
 .vscode/
 *.lock
