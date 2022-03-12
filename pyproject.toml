@@ -7,14 +7,17 @@ license = "Apache-2.0"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-httpx = "^0.22.0"
 discord-gateway = "^0.3.0"
 attrs = "^21.4.0"
 cattrs = "^1.10.0"
 anyio = {version = "^3.5.0", optional = true}
-curio = {version = "^1.5", optional = true}
 orjson = {version = "^3.6.7", optional = true}
+trio = {version = "^0.20.0", optional = true}
+curio = {version = "^1.5", optional = true}
 colorama = "^0.4.4"
+h2 = "^4.1.0"
+sniffio = "^1.2.0"
+certifi = "^2021.10.8"
 
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"
@@ -22,7 +25,8 @@ isort = "^5.10.1"
 pyright = "^0.0.13"
 
 [tool.poetry.extras]
-anyio = ["anyio"]
+trio = ["anyio", "trio"]
+asyncio = ["anyio"]
 curio = ["curio"]
 speed = ["orjson"]
 

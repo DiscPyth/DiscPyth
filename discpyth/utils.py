@@ -1,11 +1,20 @@
 from __future__ import annotations
 
-__all__ = ("MISSING", "setup_logger", "define", "dumps", "loads", "override")
+__all__ = (
+    "MISSING",
+    "setup_logger",
+    "define",
+    "dumps",
+    "loads",
+    "override",
+    "get_current_backend",
+    "exponential_backoff",
+)
 
 from functools import partial
+from inspect import stack as istack
 from logging import Formatter, Logger, StreamHandler, getLogger
 from typing import TYPE_CHECKING, Any, Set, TypeAlias, Union, get_origin
-from inspect import stack as istack
 
 from attrs import define, fields
 from attrs import has as attrs_has
@@ -15,8 +24,9 @@ from cattr._compat import is_generic
 from cattr.converters import GenConverter
 from cattrs.gen import make_dict_structure_fn, make_dict_unstructure_fn
 from colorama import Fore, Style, init
+from sniffio import current_async_library
 
-from .constants import LOGGER_FORMAT
+from .constants import LOGGER_FORMAT, T
 
 try:
     from cattrs.preconf.orjson import configure_converter
@@ -35,7 +45,23 @@ except ImportError:
 if TYPE_CHECKING:
     from logging import LogRecord
 
-    from .constants import T
+    from .backends import _anyio, _curio
+
+
+def get_current_backend() -> _anyio | _curio:
+    backend = current_async_library()
+    if backend in {"asyncio", "trio"}:
+        from .backends import _anyio
+
+        return _anyio
+    elif backend == "curio":
+        from .backends import _curio
+
+        return _curio
+
+
+def exponential_backoff(base: int, factor: int) -> int:
+    return base**factor or factor
 
 
 class Sentinel:
@@ -195,12 +221,18 @@ converter = PatchedConveter(
 configure_converter(converter)
 
 
-def dumps(obj: Any) -> str:
-    dump = _dumps(converter.unstructure(obj))
+def dumps(obj: Any) -> bytes:
+    # dump = _dumps(converter.unstructure(obj))
+    dump = _dumps(obj)
     if ORJSON:
-        return dump.decode()
-    return dump
+        return dump
+
+    return dump.encode("utf-8")
 
 
-def loads(string: str, obj: type[T]) -> T:
-    return converter.structure(_loads(string), obj)
+def loads(string: str) -> T:
+    return _loads(string)
+
+
+def create_model(json: dict, cls: type[T]) -> T:
+    return converter.structure(json, cls)
